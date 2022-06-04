@@ -11,12 +11,11 @@ const io = new Server(server,{
 
 app.get('/', (req, res) => {
   res.sendFile("Hello");
-});
+});   
 
 io.on('connection', (socket) => {
   console.log('a user connected');
-
-  socket.emit("message", "Hello World");
+  socket.emit("message", "Hello World from socket io server");
 });
 
 server.listen(3001, () => {
