@@ -8,7 +8,7 @@
 #include "variables.h"
 
 
-std::pair<int, int> threadResults[THREAD_NUM];
+std::pair<long long, long long> threadResults[THREAD_NUM];
 
 void multithread(int left, int right, const int threadNumber);
 
@@ -27,7 +27,7 @@ int main(void){
     for(int i=0; i<THREAD_NUM; ++i){
         if(threads[i].joinable())
             threads[i].join(); 
-        printf("%d %d\n", threadResults[i].first, threadResults[i].second);
+        printf("%lld %lld\n", threadResults[i].first, threadResults[i].second);
     }
     
     return 0;
@@ -49,8 +49,8 @@ void multithread(int left, int right, const int threadNumber){
     bpt::key_t start(leftStr);
     value_t values[512];
     bool next = true;
-    int sum = 0;
-    int c=0;
+    long long sum = 0;
+    long long c=0;
     while (next) {
         int ret = database.search_range(&start,rightStr, values, 512, &next);
         if (ret < 0)
