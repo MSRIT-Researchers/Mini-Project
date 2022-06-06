@@ -89,7 +89,7 @@ private:
 #else
 public:
 #endif
-    char path[512];
+    char path[512] = "";
     meta_t meta;
 
     /* init empty tree */
@@ -138,6 +138,10 @@ public:
     /* change children's parent */
     void reset_index_children_parent(index_t *begin, index_t *end,
                                      off_t parent);
+
+    //------------MSRIT researchers-----------------
+    void compute_thread_pointers(internal_node_t &node, int number_of_threads=1);
+    //----------------------------------------------
 
     template<class T>
     void node_create(off_t offset, T *node, T *next);
