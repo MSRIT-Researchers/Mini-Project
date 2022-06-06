@@ -28,7 +28,7 @@ PRGNAME = bpt_cli
 DUMP_OBJ = bpt.o util/dump_numbers.o
 DUMPPRGNAME = bpt_dump_numbers
 INSERT = bpt.o insertDb.o
-MULTITHREADING = multhreading.o bpt.o
+MULTITHREADING = bpt.o multithreading.o
 
 all: $(DUMPPRGNAME) $(PRGNAME)
 
@@ -67,8 +67,8 @@ bpt_dump_numbers: $(DUMP_OBJ)
 insertDb: $(INSERT)
 	$(QUIET_LINK)$(CXX) -o insert $(CCOPT) $(DEBUG) $(INSERT) $(CCLINK)
 
-multhreading: $(MULTITHREADING)
-	$(QUIET_LINK)$(CXX) -o multhreading $(CCOPT) $(DEBUG) $(MULTITHREADING) $(CCLINK)
+multithreading: $(MULTITHREADING)
+	$(QUIET_LINK)$(CXX) -pthread -o multithreading $(CCOPT) $(DEBUG) $(MULTITHREADING) $(CCLINK)
 
 
 %.o: %.cc
@@ -79,4 +79,5 @@ bpt.o: bpt.cc bpt.h predefined.h
 cli.o: cli.cc bpt.h predefined.h
 dump_numbers.o: dump_numbers.cc bpt.h predefined.h
 unit_test.o: unit_test.cc bpt.h predefined.h
-insertDb.o: insertDb.cc
+insertDb.o: insertDb.cc variables.h
+multithreading.o: multithreading.cc variables.h

@@ -21,17 +21,13 @@ int main(void){
     std::string str;
 
     for(int i=0; i<THREAD_NUM; ++i){
-       
-        
-        std::thread (multithread, RANGE*i, RANGE*i+RANGE-1, i);
+        threads[i] = std::thread (multithread, RANGE*i, RANGE*i+RANGE-1, i);
     }
 
     for(int i=0; i<THREAD_NUM; ++i){
-        threads[i].join();
-    }
-
-    for(int i=0; i<THREAD_NUM; ++i){
-        printf("%d %d", threadResults[i].first, threadResults[i].second);
+        if(threads[i].joinable())
+            threads[i].join(); 
+        printf("%d %d\n", threadResults[i].first, threadResults[i].second);
     }
     
     return 0;
@@ -54,16 +50,16 @@ void multithread(int left, int right, const int threadNumber){
     value_t values[512];
     bool next = true;
     int sum = 0;
-    int count=0;
+    int c=0;
     while (next) {
         int ret = database.search_range(&start,rightStr, values, 512, &next);
         if (ret < 0)
                 break;
 
-        for (int i = 0; i < ret; i++)
-            count++;
-            sum++;
+        for (int i = 0; i < ret; i++){
+            c++;
+            sum+=values[i];
         }
-
-    threadResults[threadNumber] = {sum, count};
+    }
+    threadResults[threadNumber] = {sum, c};
 }
