@@ -28,7 +28,7 @@ PRGNAME = bpt_cli
 DUMP_OBJ = bpt.o util/dump_numbers.o
 DUMPPRGNAME = bpt_dump_numbers
 INSERT = bpt.o insertDb.o
-
+MULTITHREADING = multhreading.o bpt.o
 
 all: $(DUMPPRGNAME) $(PRGNAME)
 
@@ -47,7 +47,7 @@ noopt:
 	$(MAKE) OPTIMIZATION=""
 
 clean:
-	rm -rf insert $(PRGNAME) $(TESTPRGNAME) $(DUMPPRGNAME) $(CHECKDUMPPRGNAME) $(CHECKAOFPRGNAME) *.o *.gcda *.gcno *.gcov util/*.o
+	rm -rf insert multhreading $(PRGNAME) $(TESTPRGNAME) $(DUMPPRGNAME) $(CHECKDUMPPRGNAME) $(CHECKAOFPRGNAME) *.o *.gcda *.gcno *.gcov util/*.o
 
 distclean: clean
 	$(MAKE) clean
@@ -66,6 +66,10 @@ bpt_dump_numbers: $(DUMP_OBJ)
 
 insertDb: $(INSERT)
 	$(QUIET_LINK)$(CXX) -o insert $(CCOPT) $(DEBUG) $(INSERT) $(CCLINK)
+
+multhreading: $(MULTITHREADING)
+	$(QUIET_LINK)$(CXX) -o multhreading $(CCOPT) $(DEBUG) $(MULTITHREADING) $(CCLINK)
+
 
 %.o: %.cc
 	$(QUIET_CC)$(CXX) -o $@ -c $(CFLAGS) $(TEST) $(DEBUG) $(COMPILE_TIME) $<
