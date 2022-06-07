@@ -7,3 +7,4 @@ bpt_unit_test/*
 insert
 multithreading
 testdb
+server

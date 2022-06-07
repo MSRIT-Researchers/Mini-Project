@@ -74,6 +74,9 @@ multithreading: $(MULTITHREADING)
 testdb: $(TESTDB)
 	$(QUIET_LINK)$(CXX) -o testdb $(CCOPT) $(DEBUG) $(TESTDB) $(CCLINK)
 
+server: server.cc
+	g++ server.cc -o server -L /usr/lib/ -lboost_system -lboost_thread -lpthread
+	
 %.o: %.cc
 	$(QUIET_CC)$(CXX) -o $@ -c $(CFLAGS) $(TEST) $(DEBUG) $(COMPILE_TIME) $<
 
