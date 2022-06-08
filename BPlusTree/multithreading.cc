@@ -25,8 +25,8 @@ int main(void){
     }
 
     for(int i=0; i<THREAD_NUM; ++i){
-        if(threads[i].joinable())
-            threads[i].join(); 
+        while(!threads[i].joinable());
+        threads[i].join(); 
         printf("%lld %lld\n", threadResults[i].first, threadResults[i].second);
     }
     
