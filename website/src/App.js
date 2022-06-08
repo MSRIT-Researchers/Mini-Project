@@ -3,14 +3,25 @@ import {useState,useEffect} from 'react';
 import './App.css';
 import {io} from 'socket.io-client';
 function App() {
-  const socket = io("http://localhost:3001");
- 
-  useEffect(() => {
-    socket.on("message", (data) => { 
-      console.log(data);
-    });
+  const ws = new WebSocket("ws://localhost:18080/ws");
+
+  ws.onmessage = function (event) {
+
+    try {
+            console.log(event.data);
+        
+      } catch (err) {
+        console.log(err);
+      } 
+    };
+    
+    ws.onopen = (event) => {
+      ws.send(JSON.stringify("Hi there"));
+    };
+    
+    useEffect(() => {
   }, []);
-   
+  
   return (
     <div className="App">
       <header className="App-header">
