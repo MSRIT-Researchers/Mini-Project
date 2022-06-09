@@ -28,14 +28,15 @@ typedef struct {
     size_t leaf_node_num;     /* how many leafs */
     size_t height;            /* height of tree (exclude leafs) */
     off_t slot;        /* where to store new block */
-    off_t root_offset; /* where is the root of internal nodes */
-    off_t leaf_offset; /* where is the first leaf */
+    off_t root_offset; /* where is the root of internal nodes : ROOT*/ 
+    off_t leaf_offset; /* where is the first leaf : FIRST LEAF*/
+    /*TODO : should we maintain array of thread pointers here? Or write to db? */
 } meta_t;
 
-/* internal nodes' index segment */
+/* Each <key, child> is wrapped in an index_t structure */
 struct index_t {
     key_t key;
-    off_t child; /* child's offset */
+    off_t child; /* child's offset , to locate child*/
 };
 
 /***
@@ -43,18 +44,19 @@ struct index_t {
  ***/
 struct internal_node_t {
     typedef index_t * child_t;
-
+    
     off_t parent; /* parent node offset */
-    off_t next;
-    off_t prev;
+    off_t next; /* ?? */
+    off_t prev; /* ?? */
     size_t n; /* how many children */
-    index_t children[BP_ORDER];
+    
+    index_t children[BP_ORDER]; /* array of keys and offsets */
 };
 
-/* the final record of value */
+/* the final record */
 struct record_t {
     key_t key;
-    value_t value;
+    value_t value; /*TODO : Replace with our custom values, which represent each element from dataset*/
 };
 
 /* leaf node block */
@@ -65,7 +67,7 @@ struct leaf_node_t {
     off_t next;
     off_t prev;
     size_t n;
-    record_t children[BP_ORDER];
+    record_t children[BP_ORDER]; /* array of keys and records */
 };
 
 /* the encapulated B+ tree */
