@@ -15,11 +15,18 @@ namespace bpt {
 OPERATOR_KEYCMP(index_t)
 OPERATOR_KEYCMP(record_t)
 
-/* helper iterating function */
+/* C++ provides an inline functions to reduce the function call overhead. Inline function is a function that is expanded in line when it is called. When the inline function is called whole code of the inline function gets inserted or substituted at the point of inline function call. */
+/* Template Class: a class that allows the programmer to operate with generic data types */
+
+/* helper iterating functions */
+
+/* gives the pointer to first child of any datatype {in our case record_t & index_t} */
 template<class T>
 inline typename T::child_t begin(T &node) {
     return node.children; 
 }
+
+/* gives the pointer to last + 1 child of any datatype {in our case record_t & index_t} */
 template<class T>
 inline typename T::child_t end(T &node) {
     return node.children + node.n;
@@ -27,6 +34,7 @@ inline typename T::child_t end(T &node) {
 
 /* helper searching function */
 inline index_t *find(internal_node_t &node, const key_t &key) {
+    /* right now only this is useful to us since we not appending empty strings */ 
     if (key) {
         return upper_bound(begin(node), end(node) - 1, key);
     }
@@ -36,21 +44,25 @@ inline index_t *find(internal_node_t &node, const key_t &key) {
     }
     return begin(node);
 }
+
+/* returns they record_t in the leaf_node array where key is found..*/ 
 inline record_t *find(leaf_node_t &node, const key_t &key) {
     return lower_bound(begin(node), end(node), key);
 }
 
+/* updates meta {by creating new or reading from exisiting one } to have usable bplus_tree structure */
 bplus_tree::bplus_tree(const char *p, bool force_empty)
     : fp(NULL), fp_level(0)
 {
-    bzero(path, sizeof(path));
-    strcpy(path, p);
+    bzero(PATH, sizeof(PATH));
+    strcpy(PATH, p);
 
     if (!force_empty)
-        // read tree from file
+        // read tree meta data sizeof(meta_t) starting from OFFSET_META = 0 {as of now} from file
         if (map(&meta, OFFSET_META) != 0)
             force_empty = true;
 
+    /* bug I think it should be else if {but not being used for now so left}*/
     if (force_empty) {
         open_file("w+"); // truncate file
 
@@ -60,12 +72,14 @@ bplus_tree::bplus_tree(const char *p, bool force_empty)
     }
 }
 
+/*  */
 int bplus_tree::search(const key_t& key, value_t *value) const
 {
     leaf_node_t leaf;
+    /* load leafnode at offSet: search_index(key)*/
     map(&leaf, search_leaf(key));
 
-    // finding the record
+    // finding the record at in this leafnode with key
     record_t *record = find(leaf, key);
     if (record != leaf.children + leaf.n) {
         // always return the lower bound
@@ -597,6 +611,7 @@ void bplus_tree::reset_index_children_parent(index_t *begin, index_t *end,
     }
 }
 
+/* Function returns the index_t structure where this key exisits through traversal of each internal node*/
 off_t bplus_tree::search_index(const key_t &key) const
 {
     off_t org = meta.root_offset;
@@ -613,12 +628,15 @@ off_t bplus_tree::search_index(const key_t &key) const
     return org;
 }
 
+/* Returns an offSet to where the leaf with this key is found */
 off_t bplus_tree::search_leaf(off_t index, const key_t &key) const
 {
     internal_node_t node;
     map(&node, index);
 
+    /* over the internal_node_t array get the upperbound for this and return that index_t key-offSet */
     index_t *i = upper_bound(begin(node), end(node) - 1, key);
+    
     return i->child;
 }
 
@@ -654,6 +672,7 @@ void bplus_tree::node_remove(T *prev, T *node)
     unmap(&meta, OFFSET_META);
 }
 
+/* initialize a new database with default values mostly */
 void bplus_tree::init_from_empty()
 {
     // init default meta
@@ -667,6 +686,7 @@ void bplus_tree::init_from_empty()
     // init root node
     internal_node_t root;
     root.next = root.prev = root.parent = 0;
+    /* here is where the root is allocated space in that file and meta.root_offset is initialized */ 
     meta.root_offset = alloc(&root);
 
     // init empty leaf
@@ -675,7 +695,7 @@ void bplus_tree::init_from_empty()
     leaf.parent = meta.root_offset;
     meta.leaf_offset = root.children[0].child = alloc(&leaf);
 
-    // save
+    // Since alloc returns only offset actual saving in the disk is done in umap functions
     unmap(&meta, OFFSET_META);
     unmap(&root, meta.root_offset);
     unmap(&leaf, root.children[0].child);

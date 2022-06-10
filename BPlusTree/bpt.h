@@ -37,12 +37,14 @@ typedef struct {
 struct index_t {
     key_t key;
     off_t child; /* child's offset , to locate child*/
+    // This is a data type defined in the sys/types.h header file (of fundamental type unsigned long) and is used to measure the file offset in bytes from the beginning of the file.
 };
 
 /***
  * internal node block
  ***/
 struct internal_node_t {
+    /* pointer to child*/
     typedef index_t * child_t;
     
     off_t parent; /* parent node offset */
@@ -91,7 +93,7 @@ private:
 #else
 public:
 #endif
-    char path[512];
+    char PATH[512];
     meta_t meta;
 
     /* init empty tree */
@@ -141,6 +143,7 @@ public:
     void reset_index_children_parent(index_t *begin, index_t *end,
                                      off_t parent);
 
+    /* Template Class: a class that allows the programmer to operate with generic data types */
     template<class T>
     void node_create(off_t offset, T *node, T *next);
 
@@ -149,12 +152,13 @@ public:
 
     /* multi-level file open/close */
     mutable FILE *fp;
+    /* count of how many files are opened*/
     mutable int fp_level;
     void open_file(const char *mode = "rb+") const
     {
         // `rb+` will make sure we can write everywhere without truncating file
         if (fp_level == 0)
-            fp = fopen(path, mode);
+            fp = fopen(PATH, mode);
 
         ++fp_level;
     }
