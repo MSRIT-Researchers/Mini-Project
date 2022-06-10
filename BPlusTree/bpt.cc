@@ -637,22 +637,19 @@ namespace bpt
 
         node.n++;
 
-        //------MSRIT Researchers custom algorithm--------
+        /*---------------- MSRIT Researchers -------------- */
 
-        if (node == meta.root_offset)
+        if (node.parent == 0 && meta.height>HEIGHT_CUTOFF_FOR_MULTITHREADING) //if node is the root
         {
-            // reset thread pointer array
-            thread_pointers = malloc(meta.order);
-
             if (node.n == meta.order)
             {
-                bplus_tree::compute_thread_pointers(node);
+                bplus_tree::compute_thread_offsets(node.prev);
             }
             else
             {
                 for (int i = 0; i <= node.n; i++)
                 {
-                    bplus_tree::compute_thread_pointers(node->children[i], node.n + 1 / i);
+                    bplus_tree::compute_thread_offsets(node.children[i].child, node.n + 1 / i);
                 }
             }
         }
@@ -745,6 +742,8 @@ namespace bpt
         meta.key_size = sizeof(key_t);
         meta.height = 1;
         meta.slot = OFFSET_BLOCK;
+        /* ----------------- MSRIT Researchers ------------------*/
+        meta.multithreading_degree = MULTITHREADING_DEGREE;
 
         // init root node
         internal_node_t root;
@@ -764,8 +763,23 @@ namespace bpt
     }
 
     //-------------MSRIT Researchers----------------
-    void bplus_tree::compute_thread_pointers(internal_node_t &node, int number_of_threads = 1)
+    void bplus_tree::compute_thread_offsets(off_t node_offset, int number_of_threads = 1)
     {
+        // reset thread pointer array
+        delete [] thread_offsets;
+        //thread_offsets = new off_t[MULTITHREADING_DEGREE]; //?? how to manage this
+
+        internal_node_t node;
+        map(&node, node_offset);
+
+        for(int i=0;i<node.n;i+=number_of_threads){
+            internal_node_t temp = node;
+            while(typeid(temp.children[0].child)==typeid(internal_node_t)){
+	                map(&temp, temp.children[0].child);
+            }
+            thread_offsets[i]=temp.children[0].child;
+        }
+		
     }
     //----------------------------------------------
 }

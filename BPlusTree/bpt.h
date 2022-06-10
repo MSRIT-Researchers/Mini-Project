@@ -30,6 +30,9 @@ typedef struct {
     off_t slot;        /* where to store new block */
     off_t root_offset; /* where is the root of internal nodes */
     off_t leaf_offset; /* where is the first leaf */
+
+    /*---------------- MSRIT Researchers -----------------*/
+    size_t multithreading_degree; /* number of threads supported */
 } meta_t;
 
 /* internal nodes' index segment */
@@ -71,6 +74,10 @@ struct leaf_node_t {
 /* the encapulated B+ tree */
 class bplus_tree {
 public:
+    /*---------------- MSRIT Researchers -----------------*/
+    off_t thread_offsets[MULTITHREADING_DEGREE]; /* offset that each thread must begin at */
+    void compute_thread_offsets(off_t node_offset, int number_of_threads=1);
+
     bplus_tree(const char *path, bool force_empty = false);
 
     /* abstract operations */
@@ -140,7 +147,7 @@ public:
                                      off_t parent);
 
     //------------MSRIT researchers-----------------
-    void compute_thread_pointers(internal_node_t &node, int number_of_threads=1);
+    //void compute_thread_pointers(off_t node_offset, int number_of_threads=1);
     //----------------------------------------------
 
     template<class T>
