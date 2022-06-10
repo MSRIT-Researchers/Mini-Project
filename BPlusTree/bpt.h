@@ -28,33 +28,37 @@ typedef struct {
     size_t leaf_node_num;     /* how many leafs */
     size_t height;            /* height of tree (exclude leafs) */
     off_t slot;        /* where to store new block */
-    off_t root_offset; /* where is the root of internal nodes */
-    off_t leaf_offset; /* where is the first leaf */
+    off_t root_offset; /* where is the root of internal nodes : ROOT*/ 
+    off_t leaf_offset; /* where is the first leaf : FIRST LEAF*/
+    /*TODO : should we maintain array of thread pointers here? Or write to db? */
 } meta_t;
 
-/* internal nodes' index segment */
+/* Each <key, child> is wrapped in an index_t structure */
 struct index_t {
     key_t key;
-    off_t child; /* child's offset */
+    off_t child; /* child's offset , to locate child*/
+    // This is a data type defined in the sys/types.h header file (of fundamental type unsigned long) and is used to measure the file offset in bytes from the beginning of the file.
 };
 
 /***
  * internal node block
  ***/
 struct internal_node_t {
+    /* pointer to child*/
     typedef index_t * child_t;
-
+    
     off_t parent; /* parent node offset */
-    off_t next;
-    off_t prev;
+    off_t next; /* ?? */
+    off_t prev; /* ?? */
     size_t n; /* how many children */
-    index_t children[BP_ORDER];
+    
+    index_t children[BP_ORDER]; /* array of keys and offsets */
 };
 
-/* the final record of value */
+/* the final record */
 struct record_t {
     key_t key;
-    value_t value;
+    value_t value; /*TODO : Replace with our custom values, which represent each element from dataset*/
 };
 
 /* leaf node block */
@@ -65,7 +69,7 @@ struct leaf_node_t {
     off_t next;
     off_t prev;
     size_t n;
-    record_t children[BP_ORDER];
+    record_t children[BP_ORDER]; /* array of keys and records */
 };
 
 /* the encapulated B+ tree */
@@ -89,7 +93,7 @@ private:
 #else
 public:
 #endif
-    char path[512];
+    char PATH[512];
     meta_t meta;
 
     /* init empty tree */
@@ -139,6 +143,7 @@ public:
     void reset_index_children_parent(index_t *begin, index_t *end,
                                      off_t parent);
 
+    /* Template Class: a class that allows the programmer to operate with generic data types */
     template<class T>
     void node_create(off_t offset, T *node, T *next);
 
@@ -147,12 +152,13 @@ public:
 
     /* multi-level file open/close */
     mutable FILE *fp;
+    /* count of how many files are opened*/
     mutable int fp_level;
     void open_file(const char *mode = "rb+") const
     {
         // `rb+` will make sure we can write everywhere without truncating file
         if (fp_level == 0)
-            fp = fopen(path, mode);
+            fp = fopen(PATH, mode);
 
         ++fp_level;
     }

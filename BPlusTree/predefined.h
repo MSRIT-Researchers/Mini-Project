@@ -15,7 +15,7 @@ struct key_t {
 
     key_t(const char *str = "")
     {
-        bzero(k, sizeof(k));
+        bzero(k, sizeof(k)); // erases the data in the n bytes of the memory starting at the location pointed to by s, by writing zeros (bytes containing '\0') to that area.
         strcpy(k, str);
     }
 
