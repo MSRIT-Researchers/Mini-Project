@@ -6,8 +6,8 @@
 namespace bpt {
 
 /* predefined B+ info */
-#define BP_ORDER 10
-#define MULTITHREADING_DEGREE 10
+#define BP_ORDER 5
+#define MULTITHREADING_DEGREE 5
 #define HEIGHT_CUTOFF_FOR_MULTITHREADING 2
 
 /* key/value type */

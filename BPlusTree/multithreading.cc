@@ -40,42 +40,40 @@ int main(void)
 
     */
 
-    for (i = 0; i < meta.number_of_threads; ++i)
-    {
-        // threads[i] = std::thread(multithread_aggregate, i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
-        printf("%ld ", meta.thread_offsets[i]);
-    }
-    printf("\n");
+    // for (i = 0; i < meta.number_of_threads; ++i)
+    // {
+    //     threads[i] = std::thread(multithread_aggregate, i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
+    //     // printf("%ld ", meta.thread_offsets[i]);
+    // }
+    // printf("\n");
 
     leaf_node_t leaf;
     // database.run_map(&leaf, meta.thread_offsets[0]);
 
     printf("printing leaf\n");
 
-    for(int j=0; j<THREAD_NUM; ++j){
+    for(int j=0; j<THREAD_NUM -1 ; ++j){
         database.run_map(&leaf, meta.thread_offsets[j]);
         // for(int i=0; i<leaf.n; ++i){
         //     printf("leaf.children[%d].value = %d\n",i,  leaf.children[i].value);
         // }
-        printf("leaf.children[%d].value = %d\n",0,  leaf.children[0].value);
+        printf("leaf.children[%d].value = %d\n",i,  leaf.children[0].value);
 
     }
-    // printf("leaf.children[0].value = %d\n", leaf.children[0].value);
+    printf("leaf.children[0].value = %d\n", leaf.children[0].value);
     
-   /*
     for (i = 0; i < meta.number_of_threads-1; ++i)
     {
         threads[i] = std::thread(multithread_aggregate, i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
     }
-    threads[i] = std::thread(multithread_aggregate, i, meta.thread_offsets[i]);
+    threads[i] = std::thread(multithread_aggregate, i, meta.thread_offsets[i], 0);
 
-    for (int i = 0; i < meta.number_of_threads; ++i)
+    for (i = 0; i < meta.number_of_threads; ++i)
     {
         if (threads[i].joinable())
             threads[i].join();
         printf("%lld %lld\n", threadResults[i].first, threadResults[i].second);
     }
-*/
 
     return 0;
 }
@@ -87,11 +85,12 @@ void multithread_aggregate(const int thread_number, off_t start_leaf_offset, off
 
     bplus_tree database(DB_NAME);
     leaf_node_t temp;
-    database.run_map(&temp, temp.prev);
+    database.run_map(&temp, start_leaf_offset);
     while (temp.next != end_leaf_offset)
     {
         for (int i = 0; i < temp.n; ++i)
         {
+            // printf("iterating over %d\n", temp.children[i].value);
             sum += temp.children[i].value;
             c++;
         }
