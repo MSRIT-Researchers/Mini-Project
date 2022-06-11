@@ -70,6 +70,31 @@ Find all values of keys between `100` to `10000`:
 
     ./bpt_cli test.db search 100 10000
 
+CUSTOM MODIFICATIONS
+------
+To insert values as present in inesrtDb.cc (if want to append in db do not remove test.db):
+
+    rm test.db
+    touch test.db
+    make insert
+    ./insert
+
+To run multithreaded search_range on db:
+
+    make multithreading
+    ./multithreading 
+
+To run bptCli:
+
+    make 
+    ./bpt_cli
+
+To build server:
+
+    make server
+    ./server
+
+
 License
 -------
 

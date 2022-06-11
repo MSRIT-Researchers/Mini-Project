@@ -36,29 +36,32 @@ typedef struct {
     off_t thread_offsets[MULTITHREADING_DEGREE];
 } meta_t;
 
-/* internal nodes' index segment */
+/* Each <key, child> is wrapped in an index_t structure */
 struct index_t {
     key_t key;
-    off_t child; /* child's offset */
+    off_t child; /* child's offset , to locate child*/
+    // This is a data type defined in the sys/types.h header file (of fundamental type unsigned long) and is used to measure the file offset in bytes from the beginning of the file.
 };
 
 /***
  * internal node block
  ***/
 struct internal_node_t {
+    /* pointer to child*/
     typedef index_t * child_t;
-
+    
     off_t parent; /* parent node offset */
-    off_t next;
-    off_t prev;
+    off_t next; /* ?? */
+    off_t prev; /* ?? */
     size_t n; /* how many children */
-    index_t children[BP_ORDER];
+    
+    index_t children[BP_ORDER]; /* array of keys and offsets */
 };
 
-/* the final record of value */
+/* the final record */
 struct record_t {
     key_t key;
-    value_t value;
+    value_t value; /*TODO : Replace with our custom values, which represent each element from dataset*/
 };
 
 /* leaf node block */
@@ -69,14 +72,14 @@ struct leaf_node_t {
     off_t next;
     off_t prev;
     size_t n;
-    record_t children[BP_ORDER];
+    record_t children[BP_ORDER]; /* array of keys and records */
 };
 
 /* the encapulated B+ tree */
 class bplus_tree {
 public:
     /*---------------- MSRIT Researchers -----------------*/
-    off_t thread_offsets[MULTITHREADING_DEGREE]; /* offset that each thread must begin at */
+    // off_t thread_offsets[MULTITHREADING_DEGREE]; /* offset that each thread must begin at */
     void compute_thread_offsets(off_t node_offset, int child_number=0, int number_of_threads=MULTITHREADING_DEGREE);
 
     bplus_tree(const char *path, bool force_empty = false);
@@ -97,7 +100,7 @@ private:
 #else
 public:
 #endif
-    char path[512] = "";
+    char PATH[512];
     meta_t meta;
 
     /* init empty tree */
@@ -151,6 +154,7 @@ public:
     //void compute_thread_pointers(off_t node_offset, int number_of_threads=1);
     //----------------------------------------------
 
+    /* Template Class: a class that allows the programmer to operate with generic data types */
     template<class T>
     void node_create(off_t offset, T *node, T *next);
 
@@ -159,12 +163,13 @@ public:
 
     /* multi-level file open/close */
     mutable FILE *fp;
+    /* count of how many files are opened*/
     mutable int fp_level;
     void open_file(const char *mode = "rb+") const
     {
         // `rb+` will make sure we can write everywhere without truncating file
         if (fp_level == 0)
-            fp = fopen(path, mode);
+            fp = fopen(PATH, mode);
 
         ++fp_level;
     }
