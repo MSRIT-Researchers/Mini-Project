@@ -87,6 +87,22 @@ public:
     meta_t get_meta() const {
         return meta;
     };
+       int map(void *block, off_t offset, size_t size) const
+    {
+        open_file();
+        fseek(fp, offset, SEEK_SET);
+        size_t rd = fread(block, size, 1, fp);
+        close_file();
+
+        return rd - 1;
+    }
+
+    template<class T>
+    int map(T *block, off_t offset) const
+    {
+        return map(block, offset, sizeof(T));
+    }
+
 
 #ifndef UNIT_TEST
 private:
