@@ -15,22 +15,40 @@ using namespace bpt;
 
 int main(void)
 {
-
+    int i;
     bplus_tree database(DB_NAME);
     std::thread threads[THREAD_NUM];
+    // number_of_threads to be fetched from meta
+    // std::thread threads[number_of_threads];
+
     std::string str;
 
-    for (int i = 0; i < THREAD_NUM; ++i)
+    for (i = 0; i < THREAD_NUM; ++i)
     {
         threads[i] = std::thread(multithread, RANGE * i, RANGE * i + RANGE - 1, i);
     }
 
-    for (int i = 0; i < THREAD_NUM; ++i)
+    for (i = 0; i < THREAD_NUM; ++i)
     {
         if (threads[i].joinable())
             threads[i].join();
         printf("%lld %lld\n", threadResults[i].first, threadResults[i].second);
     }
+
+    /*
+    for (int i = 0; i < number_of_threads-1; ++i)
+    {
+        threads[i] = std::thread(multithread_aggregate, i, thread_offsets[i], thread_offsets[i+1]);
+    }
+    threads[i] = std::thread(multithread_aggregate, i, thread_offsets[i]);
+
+    for (int i = 0; i < number_of_threads; ++i)
+    {
+        if (threads[i].joinable())
+            threads[i].join();
+        printf("%lld %lld\n", threadResults[i].first, threadResults[i].second);
+    }
+    */
 
     return 0;
 }

@@ -33,6 +33,7 @@ typedef struct {
 
     /*---------------- MSRIT Researchers -----------------*/
     size_t multithreading_degree; /* number of threads supported */
+    size_t number_of_threads; /* number of threads currently maintained */
     off_t thread_offsets[MULTITHREADING_DEGREE];
 } meta_t;
 
