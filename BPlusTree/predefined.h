@@ -6,9 +6,9 @@
 namespace bpt {
 
 /* predefined B+ info */
-#define BP_ORDER 20
-#define MULTITHREADING_DEGREE 15
-#define HEIGHT_CUTOFF_FOR_MULTITHREADING 4
+#define BP_ORDER 10
+#define MULTITHREADING_DEGREE 10
+#define HEIGHT_CUTOFF_FOR_MULTITHREADING 2
 
 /* key/value type */
 typedef int value_t;

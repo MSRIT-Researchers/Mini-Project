@@ -10,6 +10,7 @@
 std::pair<long long, long long> threadResults[THREAD_NUM];
 
 void multithread(int left, int right, const int threadNumber);
+void multithread_aggregate(const int thread_number, off_t start_leaf_offset, off_t end_leaf_offset = 0);
 
 using namespace bpt;
 
@@ -37,8 +38,32 @@ int main(void)
         printf("%lld %lld\n", threadResults[i].first, threadResults[i].second);
     }
 
-    /*
-    for (int i = 0; i < meta.number_of_threads-1; ++i)
+    */
+
+    for (i = 0; i < meta.number_of_threads; ++i)
+    {
+        // threads[i] = std::thread(multithread_aggregate, i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
+        printf("%ld ", meta.thread_offsets[i]);
+    }
+    printf("\n");
+
+    leaf_node_t leaf;
+    // database.run_map(&leaf, meta.thread_offsets[0]);
+
+    printf("printing leaf\n");
+
+    for(int j=0; j<THREAD_NUM; ++j){
+        database.run_map(&leaf, meta.thread_offsets[j]);
+        // for(int i=0; i<leaf.n; ++i){
+        //     printf("leaf.children[%d].value = %d\n",i,  leaf.children[i].value);
+        // }
+        printf("leaf.children[%d].value = %d\n",0,  leaf.children[0].value);
+
+    }
+    // printf("leaf.children[0].value = %d\n", leaf.children[0].value);
+    
+   /*
+    for (i = 0; i < meta.number_of_threads-1; ++i)
     {
         threads[i] = std::thread(multithread_aggregate, i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
     }
@@ -50,9 +75,30 @@ int main(void)
             threads[i].join();
         printf("%lld %lld\n", threadResults[i].first, threadResults[i].second);
     }
-    */
+*/
 
     return 0;
+}
+
+void multithread_aggregate(const int thread_number, off_t start_leaf_offset, off_t end_leaf_offset)
+{
+    long long sum = 0;
+    long long c = 0;
+
+    bplus_tree database(DB_NAME);
+    leaf_node_t temp;
+    database.run_map(&temp, temp.prev);
+    while (temp.next != end_leaf_offset)
+    {
+        for (int i = 0; i < temp.n; ++i)
+        {
+            sum += temp.children[i].value;
+            c++;
+        }
+        database.run_map(&temp, temp.next);
+    }
+
+    threadResults[thread_number] = {sum, c};
 }
 
 void multithread(int left, int right, const int threadNumber)
@@ -85,26 +131,4 @@ void multithread(int left, int right, const int threadNumber)
         }
     }
     threadResults[threadNumber] = {sum, c};
-}
-
-
-void multithread_aggregate(const int thread_number, off_t start_leaf_offset, off_t end_leaf_offset = 0)
-{
-    long long sum = 0;
-    long long c = 0;
-
-    bplus_tree database(DB_NAME);
-    leaf_node_t temp;
-    database.run_map(&temp, temp.prev);
-    while (temp.next != end_leaf_offset)
-    {
-        for (int i = 0; i < temp.n; ++i)
-        {
-            sum += temp.children[i].value;
-            c++;
-        }
-        database.run_map(&temp, temp.next);
-    }
-
-    threadResults[thread_number] = {sum, c};
 }
