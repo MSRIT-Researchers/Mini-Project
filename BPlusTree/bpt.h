@@ -84,11 +84,11 @@ public:
     int remove(const key_t& key);
     int insert(const key_t& key, value_t value);
     int update(const key_t& key, value_t value);
-    meta_t get_meta() const {
-        return meta;
-    };
-       int map(void *block, off_t offset, size_t size) const
-    {
+    
+    template<class T>
+    int run_map(T* block, off_t offset){
+
+        size_t size = sizeof(T);
         open_file();
         fseek(fp, offset, SEEK_SET);
         size_t rd = fread(block, size, 1, fp);
@@ -96,13 +96,11 @@ public:
 
         return rd - 1;
     }
-
+    
     template<class T>
-    int map(T *block, off_t offset) const
-    {
-        return map(block, offset, sizeof(T));
-    }
-
+    meta_t get_meta(T *block, off_t offset) const {
+        return meta;
+    };
 
 #ifndef UNIT_TEST
 private:
