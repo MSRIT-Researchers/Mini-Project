@@ -81,7 +81,6 @@ class bplus_tree {
 public:
     /*---------------- MSRIT Researchers -----------------*/
     // off_t thread_offsets[MULTITHREADING_DEGREE]; /* offset that each thread must begin at */
-    void compute_thread_offsets(off_t node_offset, int child_number=0, int number_of_threads=MULTITHREADING_DEGREE);
 
     bplus_tree(const char *path, bool force_empty = false);
 
@@ -103,6 +102,10 @@ public:
 #endif
     char PATH[512];
     meta_t meta;
+
+    void compute_thread_offsets(off_t node_offset, int child_number, int number_of_threads );
+
+    void compute_thread_offsets_max(off_t node_offset );
 
     /* init empty tree */
     void init_from_empty();

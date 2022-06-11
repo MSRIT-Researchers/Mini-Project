@@ -17,6 +17,7 @@ int main(void)
 {
     int i;
     bplus_tree database(DB_NAME);
+    meta_t meta = database.get_meta();
     std::thread threads[THREAD_NUM];
     // number_of_threads to be fetched from meta
     // std::thread threads[number_of_threads];
@@ -36,13 +37,13 @@ int main(void)
     }
 
     /*
-    for (int i = 0; i < number_of_threads-1; ++i)
+    for (int i = 0; i < meta.number_of_threads-1; ++i)
     {
-        threads[i] = std::thread(multithread_aggregate, i, thread_offsets[i], thread_offsets[i+1]);
+        threads[i] = std::thread(multithread_aggregate, i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
     }
-    threads[i] = std::thread(multithread_aggregate, i, thread_offsets[i]);
+    threads[i] = std::thread(multithread_aggregate, i, meta.thread_offsets[i]);
 
-    for (int i = 0; i < number_of_threads; ++i)
+    for (int i = 0; i < meta.number_of_threads; ++i)
     {
         if (threads[i].joinable())
             threads[i].join();
@@ -104,5 +105,4 @@ void multithread_aggregate(const int thread_number, off_t start_leaf_offset, off
     }
 
     threadResults[thread_number] = {sum, c};
-}
-*/
+}*/
