@@ -33,6 +33,7 @@ typedef struct {
 
     /*---------------- MSRIT Researchers -----------------*/
     size_t multithreading_degree; /* number of threads supported */
+    off_t thread_offsets[MULTITHREADING_DEGREE];
 } meta_t;
 
 /* internal nodes' index segment */
@@ -76,7 +77,7 @@ class bplus_tree {
 public:
     /*---------------- MSRIT Researchers -----------------*/
     off_t thread_offsets[MULTITHREADING_DEGREE]; /* offset that each thread must begin at */
-    void compute_thread_offsets(off_t node_offset, int number_of_threads=1);
+    void compute_thread_offsets(off_t node_offset, int child_number=0, int number_of_threads=MULTITHREADING_DEGREE);
 
     bplus_tree(const char *path, bool force_empty = false);
 

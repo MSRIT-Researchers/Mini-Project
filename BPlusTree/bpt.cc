@@ -649,7 +649,7 @@ namespace bpt
             {
                 for (int i = 0; i <= node.n; i++)
                 {
-                    bplus_tree::compute_thread_offsets(node.children[i].child, node.n + 1 / i);
+                    bplus_tree::compute_thread_offsets(node.children[i].child, i, MULTITHREADING_DEGREE/node.n);
                 }
             }
         }
@@ -763,21 +763,27 @@ namespace bpt
     }
 
     //-------------MSRIT Researchers----------------
-    void bplus_tree::compute_thread_offsets(off_t node_offset, int number_of_threads = 1)
+    void bplus_tree::compute_thread_offsets(off_t node_offset,  int child_number=0, int number_of_threads = MULTITHREADING_DEGREE)
     {
         // reset thread pointer array
-        delete [] thread_offsets;
+        //delete [] thread_offsets;
         //thread_offsets = new off_t[MULTITHREADING_DEGREE]; //?? how to manage this
 
         internal_node_t node;
+        internal_node_t temp;
         map(&node, node_offset);
 
-        for(int i=0;i<node.n;i+=number_of_threads){
-            internal_node_t temp = node;
+        int increment = node.n / number_of_threads;
+
+        int thread_offset_index = child_number*number_of_threads;
+
+        for(int i=0;i<node.n;i+=increment){
+            temp = node;
             while(typeid(temp.children[0].child)==typeid(internal_node_t)){
 	                map(&temp, temp.children[0].child);
             }
-            thread_offsets[i]=temp.children[0].child;
+            meta.thread_offsets[thread_offset_index]=temp.children[0].child;
+            thread_offset_index++;
         }
 		
     }
