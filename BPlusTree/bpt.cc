@@ -648,13 +648,14 @@ int bplus_tree::search(const key_t& key, value_t *value) const
         {
             if (node.n == meta.order)
             {
-                bplus_tree::compute_thread_offsets(node.prev);
+                compute_thread_offsets_max(node.prev);
             }
             else
             {
                 for (int i = 0; i <= node.n; i++)
                 {
-                    bplus_tree::compute_thread_offsets(node.children[i].child, i, MULTITHREADING_DEGREE/node.n);
+
+                    compute_thread_offsets(node.children[i].child, i, MULTITHREADING_DEGREE/node.n);
                 }
             }
         }
@@ -743,14 +744,17 @@ off_t bplus_tree::search_leaf(off_t index, const key_t &key) const
 
 
     //-------------MSRIT Researchers----------------
-    void bplus_tree::compute_thread_offsets(off_t node_offset,  int child_number=0, int number_of_threads = MULTITHREADING_DEGREE)
+    void bplus_tree::compute_thread_offsets_max(off_t node_offset )
     {
         // reset thread pointer array
         //delete [] thread_offsets;
         //thread_offsets = new off_t[MULTITHREADING_DEGREE]; //?? how to manage this
+        int number_of_threads = MULTITHREADING_DEGREE;
+        int child_number=0;
 
         internal_node_t node;
         internal_node_t temp;
+
         map(&node, node_offset);
 
         int increment = node.n / number_of_threads;
@@ -767,6 +771,33 @@ off_t bplus_tree::search_leaf(off_t index, const key_t &key) const
         }
 		
     }
+
+    void bplus_tree::compute_thread_offsets(off_t node_offset, int child_number, int number_of_threads )
+    {
+        // reset thread pointer array
+        //delete [] thread_offsets;
+        //thread_offsets = new off_t[MULTITHREADING_DEGREE]; //?? how to manage this
+
+        internal_node_t node;
+        internal_node_t temp;
+
+        map(&node, node_offset);
+
+        int increment = node.n / number_of_threads;
+
+        int thread_offset_index = child_number*number_of_threads;
+
+        for(int i=0;i<node.n;i+=increment){
+            temp = node;
+            while(typeid(temp.children[0].child)==typeid(internal_node_t)){
+	                map(&temp, temp.children[0].child);
+            }
+            meta.thread_offsets[thread_offset_index]=temp.children[0].child;
+            thread_offset_index++;
+        }
+		
+    }
+
 
 /* initialize a new database with default values mostly */
 void bplus_tree::init_from_empty()
