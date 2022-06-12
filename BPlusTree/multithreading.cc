@@ -24,6 +24,7 @@ int main(void)
 
     std::string str;
 
+    /*
     for (i = 0; i < THREAD_NUM; ++i)
     {
         threads[i] = std::thread(multithread, RANGE * i, RANGE * i + RANGE - 1, i);
@@ -35,8 +36,8 @@ int main(void)
             threads[i].join();
         printf("%lld %lld\n", threadResults[i].first, threadResults[i].second);
     }
-
-    /*
+    */
+    
     for (int i = 0; i < meta.number_of_threads-1; ++i)
     {
         threads[i] = std::thread(multithread_aggregate, i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
@@ -49,7 +50,7 @@ int main(void)
             threads[i].join();
         printf("%lld %lld\n", threadResults[i].first, threadResults[i].second);
     }
-    */
+    
 
     return 0;
 }
@@ -86,14 +87,15 @@ void multithread(int left, int right, const int threadNumber)
     threadResults[threadNumber] = {sum, c};
 }
 
-/*
+
 void multithread_aggregate(const int thread_number, off_t start_leaf_offset, off_t end_leaf_offset = 0)
 {
     long long sum = 0;
     long long c = 0;
 
-    bpt::leaf_node_t temp;
-    bpt::bplus_tree::map(&temp, temp.prev);
+    bplus_tree database(DB_NAME);
+    leaf_node_t temp;
+    database.run_map(&temp, temp.prev);
     while (temp.next != end_leaf_offset)
     {
         for (int i = 0; i < temp.n; ++i)
@@ -101,8 +103,8 @@ void multithread_aggregate(const int thread_number, off_t start_leaf_offset, off
             sum += temp.children[i].value;
             c++;
         }
-        bpt::bplus_tree::map(&temp, temp.next);
+        database.run_map(&temp, temp.next);
     }
 
     threadResults[thread_number] = {sum, c};
-}*/
+}

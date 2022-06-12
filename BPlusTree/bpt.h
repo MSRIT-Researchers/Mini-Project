@@ -91,6 +91,20 @@ public:
     int remove(const key_t& key);
     int insert(const key_t& key, value_t value);
     int update(const key_t& key, value_t value);
+    
+    template<class T>
+    int run_map(T* block, off_t offset){
+
+        size_t size = sizeof(T);
+        open_file();
+        fseek(fp, offset, SEEK_SET);
+        size_t rd = fread(block, size, 1, fp);
+        close_file();
+
+        return rd - 1;
+    }
+    
+    template<class T>
     meta_t get_meta() const {
         return meta;
     };
