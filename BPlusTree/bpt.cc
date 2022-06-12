@@ -658,9 +658,9 @@ int bplus_tree::search(const key_t& key, value_t *value) const
         
                 printf("computing compute_thread_offsets\n");
 
-                for (int i = 0; i <= node.n; i++)
+                for (int i = 0; i < node.n; i++)
                 {
-                    
+                    printf("");
                     compute_thread_offsets(node.children[i].child, i, MULTITHREADING_DEGREE/node.n);
                 }
             }
@@ -774,6 +774,8 @@ off_t bplus_tree::search_leaf(off_t index, const key_t &key) const
 
             meta.thread_offsets[i]=temp.children[0].child;
         }
+		meta.number_of_threads = number_of_threads;
+
 		
     }
 
@@ -802,7 +804,7 @@ off_t bplus_tree::search_leaf(off_t index, const key_t &key) const
             meta.thread_offsets[thread_offset_index]=temp.children[0].child;
             thread_offset_index++;
         }
-		
+		meta.number_of_threads = thread_offset_index;
     }
 
 
@@ -816,7 +818,7 @@ void bplus_tree::init_from_empty()
     meta.key_size = sizeof(key_t);
     meta.height = 1;
     meta.slot = OFFSET_BLOCK;
-    meta.number_of_threads = MULTITHREADING_DEGREE;
+    meta.number_of_threads = 1;
     // init root node
     internal_node_t root;
     root.next = root.prev = root.parent = 0;
@@ -828,6 +830,8 @@ void bplus_tree::init_from_empty()
     leaf.next = leaf.prev = 0;
     leaf.parent = meta.root_offset;
     meta.leaf_offset = root.children[0].child = alloc(&leaf);
+    meta.thread_offsets[0] = meta.leaf_offset;
+
 
     // Since alloc returns only offset actual saving in the disk is done in umap functions
     unmap(&meta, OFFSET_META);

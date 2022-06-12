@@ -11,8 +11,7 @@ std::pair<long long, long long> threadResults[THREAD_NUM];
 
 void multithread(int left, int right, const int threadNumber);
 void multithread_aggregate(const int thread_number, off_t start_leaf_offset, off_t end_leaf_offset = 0);
-void multithread_aggregate_last(const int thread_number, off_t start_leaf_offset, off_t end_leaf_offset);
-
+void multithread_aggregate_last(const int thread_number, off_t start_leaf_offset);
 
 using namespace bpt;
 
@@ -23,12 +22,16 @@ int main(void)
     meta_t meta = database.get_meta();
     std::thread threads[THREAD_NUM];
     std::string str;
-    
-    for (i = 0; i < meta.number_of_threads-1; ++i)
+
+    printf("hello there");
+    printf("%ld", meta.leaf_offset);
+    printf("%ld", meta.thread_offsets[0]);
+
+    for (i = 0; i < meta.number_of_threads - 1; ++i)
     {
-        threads[i] = std::thread(multithread_aggregate, i, meta.thread_offsets[i], meta.thread_offsets[i+1]);        
+        threads[i] = std::thread(multithread_aggregate, i, meta.thread_offsets[i], meta.thread_offsets[i + 1]);
     }
-    threads[i] = std::thread(multithread_aggregate_last, i, meta.thread_offsets[i], 0);
+    threads[i] = std::thread(multithread_aggregate_last, i, meta.thread_offsets[i]);
 
     for (i = 0; i < meta.number_of_threads; ++i)
     {
@@ -58,10 +61,12 @@ void multithread_aggregate(const int thread_number, off_t start_leaf_offset, off
         database.run_map(&temp, temp.next);
     }
 
+    // printf("%d  %ld  %ld", thread_number, sum, c);
+
     threadResults[thread_number] = {sum, c};
 }
 
-void multithread_aggregate_last(const int thread_number, off_t start_leaf_offset, off_t end_leaf_offset)
+void multithread_aggregate_last(const int thread_number, off_t start_leaf_offset)
 {
     long long sum = 0;
     long long c = 0;
@@ -69,6 +74,9 @@ void multithread_aggregate_last(const int thread_number, off_t start_leaf_offset
     bplus_tree database(DB_NAME);
     leaf_node_t temp;
     database.run_map(&temp, start_leaf_offset);
+
+    off_t end_leaf_offset = 0;
+
     while (temp.next != end_leaf_offset)
     {
         for (int i = 0; i < temp.n; ++i)
@@ -80,11 +88,12 @@ void multithread_aggregate_last(const int thread_number, off_t start_leaf_offset
     }
 
     for (int i = 0; i < temp.n; ++i)
-        {
-            sum += temp.children[i].value;
-            c++;
-        }
-        database.run_map(&temp, temp.next);
+    {
+        sum += temp.children[i].value;
+        c++;
+    }
+    database.run_map(&temp, temp.next);
 
+    // printf("%d  %ld  %ld", thread_number, sum, c);
     threadResults[thread_number] = {sum, c};
 }
