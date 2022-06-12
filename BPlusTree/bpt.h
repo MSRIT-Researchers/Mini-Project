@@ -103,8 +103,7 @@ public:
 
         return rd - 1;
     }
-    
-    template<class T>
+
     meta_t get_meta() const {
         return meta;
     };
@@ -119,7 +118,7 @@ public:
 
     void compute_thread_offsets(off_t node_offset, int child_number, int number_of_threads );
 
-    void compute_thread_offsets_max(off_t node_offset );
+    void compute_thread_offsets_max();
 
     /* init empty tree */
     void init_from_empty();
