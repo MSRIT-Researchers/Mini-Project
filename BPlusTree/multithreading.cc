@@ -11,6 +11,8 @@ std::pair<long long, long long> threadResults[THREAD_NUM];
 
 void multithread(int left, int right, const int threadNumber);
 void multithread_aggregate(const int thread_number, off_t start_leaf_offset, off_t end_leaf_offset = 0);
+void multithread_aggregate_last(const int thread_number, off_t start_leaf_offset, off_t end_leaf_offset);
+
 
 using namespace bpt;
 
@@ -20,53 +22,13 @@ int main(void)
     bplus_tree database(DB_NAME);
     meta_t meta = database.get_meta();
     std::thread threads[THREAD_NUM];
-    // number_of_threads to be fetched from meta
-    // std::thread threads[number_of_threads];
-
     std::string str;
-
-    /*
-    for (i = 0; i < THREAD_NUM; ++i)
-    {
-        threads[i] = std::thread(multithread, RANGE * i, RANGE * i + RANGE - 1, i);
-    }
-
-    for (i = 0; i < THREAD_NUM; ++i)
-    {
-        if (threads[i].joinable())
-            threads[i].join();
-        printf("%lld %lld\n", threadResults[i].first, threadResults[i].second);
-    }
-
-    */
-
-    // for (i = 0; i < meta.number_of_threads; ++i)
-    // {
-    //     threads[i] = std::thread(multithread_aggregate, i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
-    //     // printf("%ld ", meta.thread_offsets[i]);
-    // }
-    // printf("\n");
-
-    leaf_node_t leaf;
-    // database.run_map(&leaf, meta.thread_offsets[0]);
-
-    printf("printing leaf\n");
-
-    for(int j=0; j<THREAD_NUM -1 ; ++j){
-        database.run_map(&leaf, meta.thread_offsets[j]);
-        // for(int i=0; i<leaf.n; ++i){
-        //     printf("leaf.children[%d].value = %d\n",i,  leaf.children[i].value);
-        // }
-        printf("leaf.children[%d].value = %d\n",i,  leaf.children[0].value);
-
-    }
-    printf("leaf.children[0].value = %d\n", leaf.children[0].value);
     
     for (i = 0; i < meta.number_of_threads-1; ++i)
     {
-        threads[i] = std::thread(multithread_aggregate, i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
+        threads[i] = std::thread(multithread_aggregate, i, meta.thread_offsets[i], meta.thread_offsets[i+1]);        
     }
-    threads[i] = std::thread(multithread_aggregate, i, meta.thread_offsets[i], 0);
+    threads[i] = std::thread(multithread_aggregate_last, i, meta.thread_offsets[i], 0);
 
     for (i = 0; i < meta.number_of_threads; ++i)
     {
@@ -90,7 +52,6 @@ void multithread_aggregate(const int thread_number, off_t start_leaf_offset, off
     {
         for (int i = 0; i < temp.n; ++i)
         {
-            // printf("iterating over %d\n", temp.children[i].value);
             sum += temp.children[i].value;
             c++;
         }
@@ -100,34 +61,30 @@ void multithread_aggregate(const int thread_number, off_t start_leaf_offset, off
     threadResults[thread_number] = {sum, c};
 }
 
-void multithread(int left, int right, const int threadNumber)
+void multithread_aggregate_last(const int thread_number, off_t start_leaf_offset, off_t end_leaf_offset)
 {
-
-    std::string str = std::to_string(left);
-    char leftStr[str.length()];
-    strcpy(leftStr, str.c_str());
-    str = std::to_string(right);
-    char rightStr[str.size()];
-    strcpy(rightStr, str.c_str());
-
-    bplus_tree database(DB_NAME);
-
-    bpt::key_t start(leftStr);
-    value_t values[512];
-    bool next = true;
     long long sum = 0;
     long long c = 0;
-    while (next)
-    {
-        int ret = database.search_range(&start, rightStr, values, 512, &next);
-        if (ret < 0)
-            break;
 
-        for (int i = 0; i < ret; i++)
+    bplus_tree database(DB_NAME);
+    leaf_node_t temp;
+    database.run_map(&temp, start_leaf_offset);
+    while (temp.next != end_leaf_offset)
+    {
+        for (int i = 0; i < temp.n; ++i)
         {
+            sum += temp.children[i].value;
             c++;
-            sum += values[i];
         }
+        database.run_map(&temp, temp.next);
     }
-    threadResults[threadNumber] = {sum, c};
+
+    for (int i = 0; i < temp.n; ++i)
+        {
+            sum += temp.children[i].value;
+            c++;
+        }
+        database.run_map(&temp, temp.next);
+
+    threadResults[thread_number] = {sum, c};
 }
