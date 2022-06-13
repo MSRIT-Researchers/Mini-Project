@@ -650,19 +650,19 @@ int bplus_tree::search(const key_t& key, value_t *value) const
            
             if (node.n == meta.order)
             {
-                 printf("computing compute_thread_offsets_max\n");
+                printf("RUNNING COMPUTE THREAD MAXX! OFFSETS\n");
                 compute_thread_offsets_max();
             }
             else
             {
         
-                printf("computing compute_thread_offsets\n");
+                printf("RUNNING COMPUTE THREAD OFFSETS\n");
 
                 for (int i = 0; i < node.n; i++)
                 {
-                    printf("");
                     compute_thread_offsets(node.children[i].child, i, MULTITHREADING_DEGREE/node.n);
                 }
+                meta.number_of_threads =  (MULTITHREADING_DEGREE/node.n) * node.n;
             }
         }
         //------------------------------------------------
@@ -760,14 +760,12 @@ off_t bplus_tree::search_leaf(off_t index, const key_t &key) const
 
         map(&node, meta.root_offset);
 
-        // int increment = node.n / number_of_threads;
         int increment = 1;    
     
         for(int i=0;i<BP_ORDER;i+=increment){
             map(&temp, node.children[i].child) ;
             int height = meta.height;
             while (height > 2) {
-                printf("going inside with height as: %d\n", height );
                 map(&temp, temp.children[0].child);
                 --height;
             }
@@ -797,14 +795,13 @@ off_t bplus_tree::search_leaf(off_t index, const key_t &key) const
         for(int i=0;i<node.n;i+=increment){
             map(&temp, node.children[i].child) ;
             int height = meta.height;
-            while (height > 2) {
+            while (height > 3) {
                 map(&temp, temp.children[0].child);
                 --height;
             }
             meta.thread_offsets[thread_offset_index]=temp.children[0].child;
             thread_offset_index++;
         }
-		meta.number_of_threads = thread_offset_index;
     }
 
 
@@ -831,7 +828,6 @@ void bplus_tree::init_from_empty()
     leaf.parent = meta.root_offset;
     meta.leaf_offset = root.children[0].child = alloc(&leaf);
     meta.thread_offsets[0] = meta.leaf_offset;
-
 
     // Since alloc returns only offset actual saving in the disk is done in umap functions
     unmap(&meta, OFFSET_META);

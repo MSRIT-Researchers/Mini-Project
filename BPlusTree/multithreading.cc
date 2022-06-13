@@ -7,7 +7,7 @@
 #include "bpt.h"
 #include "variables.h"
 
-std::pair<long long, long long> threadResults[THREAD_NUM];
+std::pair<long long, long long> threadResults[100];
 
 void multithread(int left, int right, const int threadNumber);
 void multithread_aggregate(const int thread_number, off_t start_leaf_offset, off_t end_leaf_offset = 0);
@@ -20,12 +20,17 @@ int main(void)
     int i;
     bplus_tree database(DB_NAME);
     meta_t meta = database.get_meta();
-    std::thread threads[THREAD_NUM];
-    std::string str;
+    int number_of_threads = meta.number_of_threads;
+    std::thread threads[meta.number_of_threads];
 
-    printf("hello there");
-    printf("%ld", meta.leaf_offset);
-    printf("%ld", meta.thread_offsets[0]);
+    leaf_node_t leaf;
+
+    printf("Number of Threads: %ld \n\n",meta.number_of_threads );
+    for(int i=0; i<meta.number_of_threads; ++i){
+         database.run_map(&leaf, meta.thread_offsets[i]);
+         printf("%d\n", leaf.children[0].value);
+    }   
+    printf("\n");
 
     for (i = 0; i < meta.number_of_threads - 1; ++i)
     {
@@ -39,6 +44,7 @@ int main(void)
             threads[i].join();
         printf("%lld %lld\n", threadResults[i].first, threadResults[i].second);
     }
+
 
     return 0;
 }
@@ -60,8 +66,6 @@ void multithread_aggregate(const int thread_number, off_t start_leaf_offset, off
         }
         database.run_map(&temp, temp.next);
     }
-
-    // printf("%d  %ld  %ld", thread_number, sum, c);
 
     threadResults[thread_number] = {sum, c};
 }
@@ -94,6 +98,5 @@ void multithread_aggregate_last(const int thread_number, off_t start_leaf_offset
     }
     database.run_map(&temp, temp.next);
 
-    // printf("%d  %ld  %ld", thread_number, sum, c);
     threadResults[thread_number] = {sum, c};
 }
