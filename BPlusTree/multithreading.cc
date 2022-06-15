@@ -3,6 +3,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <iostream>
 #include <algorithm>
 #include <ctime>
 #include "bpt.h"
@@ -15,11 +16,12 @@ void multithread_aggregate(const int thread_number, off_t start_leaf_offset, off
 void multithread_aggregate_last(const int thread_number, off_t start_leaf_offset);
 
 using namespace bpt;
+bplus_tree database(DB_NAME);
 
 int main(void)
 {
+
     int i;
-    bplus_tree database(DB_NAME);
     meta_t meta = database.get_meta();
     int number_of_threads = meta.number_of_threads;
     std::thread threads[meta.number_of_threads];
@@ -31,7 +33,7 @@ int main(void)
     printf("Number of Threads: %ld \n\n",meta.number_of_threads );
     for(int i=0; i<meta.number_of_threads; ++i){
          database.run_map(&leaf, meta.thread_offsets[i]);
-         printf("%d\n", leaf.children[0].value);
+         printf("Thread %d offset : %d\n",i, leaf.children[0].value);
     }   
     printf("\n");
 
@@ -57,11 +59,12 @@ int main(void)
     }
     threads[i] = std::thread(multithread_aggregate_last, i, meta.thread_offsets[i]);
 
+
     for (i = 0; i < meta.number_of_threads; ++i)
     {
         if (threads[i].joinable())
             threads[i].join();
-        // printf("%lld %lld\n", threadResults[i].first, threadResults[i].second);
+        printf("Thread %d : | Sum : %lld | No of Records : %lld\n",i, threadResults[i].first, threadResults[i].second);
     }
     end = clock();
 
