@@ -4,6 +4,7 @@
 #include <thread>
 #include <vector>
 #include <algorithm>
+#include <ctime>
 #include "bpt.h"
 #include "variables.h"
 
@@ -25,6 +26,8 @@ int main(void)
 
     leaf_node_t leaf;
 
+    
+
     printf("Number of Threads: %ld \n\n",meta.number_of_threads );
     for(int i=0; i<meta.number_of_threads; ++i){
          database.run_map(&leaf, meta.thread_offsets[i]);
@@ -32,6 +35,22 @@ int main(void)
     }   
     printf("\n");
 
+    clock_t start, end;
+
+    start = clock();
+
+    threads[0] = std::thread(multithread_aggregate,0, meta.thread_offsets[0], 0);
+    if(threads[0].joinable())
+        threads[0].join();
+    
+    end = clock();
+    printf("Sum: %d, count: %d\n", threadResults[0].first, threadResults[0].second);
+
+    printf("time taken by SingleThread: %f s\n", (end - start) / (double)(CLOCKS_PER_SEC));
+
+
+
+    start = clock();
     for (i = 0; i < meta.number_of_threads - 1; ++i)
     {
         threads[i] = std::thread(multithread_aggregate, i, meta.thread_offsets[i], meta.thread_offsets[i + 1]);
@@ -42,12 +61,18 @@ int main(void)
     {
         if (threads[i].joinable())
             threads[i].join();
-        printf("%lld %lld\n", threadResults[i].first, threadResults[i].second);
+        // printf("%lld %lld\n", threadResults[i].first, threadResults[i].second);
     }
+    end = clock();
 
+    printf("time taken by multithreading: %f s\n", (end - start) / (double)(CLOCKS_PER_SEC));
 
-    return 0;
+  
+        return 0;
+
 }
+
+
 
 void multithread_aggregate(const int thread_number, off_t start_leaf_offset, off_t end_leaf_offset)
 {
