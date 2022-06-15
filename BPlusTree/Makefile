@@ -69,7 +69,7 @@ insertDb: $(INSERT)
 	$(QUIET_LINK)$(CXX) -o insert $(CCOPT) $(DEBUG) $(INSERT) $(CCLINK)
 
 multithreading: $(MULTITHREADING)
-	$(QUIET_LINK)$(CXX) -pthread -o multithreading $(CCOPT) $(DEBUG) $(MULTITHREADING) $(CCLINK)
+	$(QUIET_LINK)$(CXX) -pthread -o multithreading $(CCOPT) $(DEBUG) $(MULTITHREADING) $(CCLINK) 
 
 testdb: $(TESTDB)
 	$(QUIET_LINK)$(CXX) -o testdb $(CCOPT) $(DEBUG) $(TESTDB) $(CCLINK)
@@ -88,5 +88,5 @@ cli.o: cli.cc bpt.h predefined.h
 dump_numbers.o: dump_numbers.cc bpt.h predefined.h
 unit_test.o: unit_test.cc bpt.h predefined.h
 insertDb.o: insertDb.cc variables.h
-multithreading.o: multithreading.cc variables.h
+multithreading.o: multithreading.cc variables.h 
 testDb.o: testDb.cc variables.h

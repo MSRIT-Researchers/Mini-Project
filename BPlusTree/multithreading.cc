@@ -8,7 +8,7 @@
 #include <ctime>
 #include "bpt.h"
 #include "variables.h"
-
+#include <future>
 std::pair<long long, long long> threadResults[100];
 
 void multithread(int left, int right, const int threadNumber);
@@ -48,28 +48,35 @@ int main(void)
     end = clock();
     printf("Sum: %d, count: %d\n", threadResults[0].first, threadResults[0].second);
 
+    double stt = (end - start) / (double)(CLOCKS_PER_SEC);
     printf("time taken by SingleThread: %f s\n", (end - start) / (double)(CLOCKS_PER_SEC));
 
 
-
+    std::vector<std::future<void>> futures;
     start = clock();
     for (i = 0; i < meta.number_of_threads - 1; ++i)
     {
-        threads[i] = std::thread(multithread_aggregate, i, meta.thread_offsets[i], meta.thread_offsets[i + 1]);
+        futures.push_back(std::async(std::launch::async, [&](){
+            multithread_aggregate( i, meta.thread_offsets[i], meta.thread_offsets[i + 1]);
+        }));
+        // threads[i] = std::thread(multithread_aggregate, i, meta.thread_offsets[i], meta.thread_offsets[i + 1]);
     }
-    threads[i] = std::thread(multithread_aggregate_last, i, meta.thread_offsets[i]);
+    // threads[i] = std::thread(multithread_aggregate_last, i, meta.thread_offsets[i]);
 
 
-    for (i = 0; i < meta.number_of_threads; ++i)
+    for (i = 0; i < meta.number_of_threads-1; ++i)
     {
-        if (threads[i].joinable())
-            threads[i].join();
-        printf("Thread %d : | Sum : %lld | No of Records : %lld\n",i, threadResults[i].first, threadResults[i].second);
+        // if (threads[i].joinable())
+        //     threads[i].join();
+        futures[i].get();
+        //printf("Thread %d : | Sum : %lld | No of Records : %lld\n",i, threadResults[i].first, threadResults[i].second);
     }
     end = clock();
+    printf("time taken by Multithread: %f s\n", (end - start) / (double)(CLOCKS_PER_SEC));
+    double mtt = (end - start) / (double)(CLOCKS_PER_SEC);
 
-    printf("time taken by multithreading: %f s\n", (end - start) / (double)(CLOCKS_PER_SEC));
-
+    double percentage = (stt/mtt) ;
+    printf("\nMultithreading is %fx faster than Single threading\n",percentage);
   
         return 0;
 
@@ -95,6 +102,7 @@ void multithread_aggregate(const int thread_number, off_t start_leaf_offset, off
         database.run_map(&temp, temp.next);
     }
 
+    // printf("sum : %lld\n", sum);
     threadResults[thread_number] = {sum, c};
 }
 
