@@ -9,6 +9,9 @@
 #include "bpt.h"
 #include "variables.h"
 #include <future>
+#include <sys/wait.h>
+#include <unistd.h>
+
 std::pair<long long, long long> threadResults[100];
 
 void multithread(int left, int right, const int threadNumber);
@@ -16,11 +19,23 @@ void multithread_aggregate(const int thread_number, off_t start_leaf_offset, off
 void multithread_aggregate_last(const int thread_number, off_t start_leaf_offset);
 
 using namespace bpt;
-bplus_tree database(DB_NAME);
 
+void spawnChild(int i , int a , int b,bool flag){
+    pid_t pid = fork();
+    if(pid == 0){
+        if(flag){
+            multithread_aggregate(i,a,b);
+        }
+        else{
+            multithread_aggregate_last(i,a);
+        }
+        exit(0);
+    }
+}
 int main(void)
 {
 
+    bpt::bplus_tree database(DB_NAME);
     int i;
     meta_t meta = database.get_meta();
     int number_of_threads = meta.number_of_threads;
@@ -38,47 +53,47 @@ int main(void)
     printf("\n");
 
     clock_t start, end;
+    printf("starting time\n");
 
     start = clock();
 
-    threads[0] = std::thread(multithread_aggregate,0, meta.thread_offsets[0], 0);
-    if(threads[0].joinable())
-        threads[0].join();
-    
+    multithread_aggregate(0, meta.thread_offsets[0], 0);
     end = clock();
-    printf("Sum: %d, count: %d\n", threadResults[0].first, threadResults[0].second);
+    // printf("Sum: %d, count: %d\n", ans.first, ans.second);
 
     double stt = (end - start) / (double)(CLOCKS_PER_SEC);
     printf("time taken by SingleThread: %f s\n", (end - start) / (double)(CLOCKS_PER_SEC));
 
 
     std::vector<std::future<void>> futures;
+    printf("starting time\n");
+
     start = clock();
-    for (i = 0; i < meta.number_of_threads - 1; ++i)
-    {
-        futures.push_back(std::async(std::launch::async, [&](){
-            multithread_aggregate( i, meta.thread_offsets[i], meta.thread_offsets[i + 1]);
-        }));
-        // threads[i] = std::thread(multithread_aggregate, i, meta.thread_offsets[i], meta.thread_offsets[i + 1]);
-    }
-    // threads[i] = std::thread(multithread_aggregate_last, i, meta.thread_offsets[i]);
+    for (i = 0; i < meta.number_of_threads ; ++i){
 
+        if(i == meta.number_of_threads - 1){
+            spawnChild(i, meta.thread_offsets[i], 0,false);
+        }
+        else{
+            spawnChild(i, meta.thread_offsets[i], meta.thread_offsets[i+1],true);
+        }
 
-    for (i = 0; i < meta.number_of_threads-1; ++i)
-    {
-        // if (threads[i].joinable())
-        //     threads[i].join();
-        futures[i].get();
-        //printf("Thread %d : | Sum : %lld | No of Records : %lld\n",i, threadResults[i].first, threadResults[i].second);
     }
+
+        pid_t child_pid;
+
+    while ((child_pid = wait(nullptr)) > 0){
+        // printf("child %d terminated\n",child_pid);
+    }
+
     end = clock();
-    printf("time taken by Multithread: %f s\n", (end - start) / (double)(CLOCKS_PER_SEC));
+    printf("\ntime taken by Multithread: %f s\n", (end - start) / (double)(CLOCKS_PER_SEC));
     double mtt = (end - start) / (double)(CLOCKS_PER_SEC);
 
     double percentage = (stt/mtt) ;
     printf("\nMultithreading is %fx faster than Single threading\n",percentage);
   
-        return 0;
+    return 0;
 
 }
 
@@ -101,13 +116,14 @@ void multithread_aggregate(const int thread_number, off_t start_leaf_offset, off
         }
         database.run_map(&temp, temp.next);
     }
-
+// 
     // printf("sum : %lld\n", sum);
     threadResults[thread_number] = {sum, c};
 }
 
 void multithread_aggregate_last(const int thread_number, off_t start_leaf_offset)
 {
+    printf("multithreaded here\n");
     long long sum = 0;
     long long c = 0;
 
@@ -133,6 +149,7 @@ void multithread_aggregate_last(const int thread_number, off_t start_leaf_offset
         c++;
     }
     database.run_map(&temp, temp.next);
+    // printf("sum : %lld\n", sum);
 
     threadResults[thread_number] = {sum, c};
 }
