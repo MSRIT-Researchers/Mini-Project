@@ -20,16 +20,11 @@ void multithread_aggregate_last(const int thread_number, off_t start_leaf_offset
 
 using namespace bpt;
 
-void spawnChild(int i , int a , int b,bool flag){
+void spawnChild(int i , int a , int b){
     pid_t pid = fork();
     if(pid == 0){
         clock_t start = clock();
-        if(flag){
-            multithread_aggregate(i,a,b);
-        }
-        else{
-            multithread_aggregate_last(i,a);
-        }
+        multithread_aggregate(i,a,b);
         clock_t end = clock();
         printf("time taken %f s\n",  (end - start) / (double)(CLOCKS_PER_SEC));
         exit(0);
@@ -46,8 +41,7 @@ int main(void)
 
     leaf_node_t leaf;
 
-    
-
+    meta.thread_offsets[number_of_threads] = 0;
     printf("Number of Threads: %ld \n\n",meta.number_of_threads );
     for(int i=0; i<meta.number_of_threads; ++i){
          database.run_map(&leaf, meta.thread_offsets[i]);
@@ -73,17 +67,11 @@ int main(void)
 
     start = clock();
     for (i = 0; i < meta.number_of_threads ; ++i){
-
-        if(i == meta.number_of_threads - 1){
-            spawnChild(i, meta.thread_offsets[i], 0,false);
-        }
-        else{
-            spawnChild(i, meta.thread_offsets[i], meta.thread_offsets[i+1],true);
-        }
+        spawnChild(i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
 
     }
 
-        pid_t child_pid;
+    pid_t child_pid;
 
     while ((child_pid = wait(nullptr)) > 0){
         // printf("child %d terminated\n",child_pid);
