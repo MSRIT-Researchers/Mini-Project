@@ -37,6 +37,7 @@ int main(void)
     }   
     printf("\n");
 
+    meta.thread_offsets[number_of_threads] = 0;
     clock_t start, end;
 
     start = clock();
@@ -54,7 +55,7 @@ int main(void)
 
     std::vector<std::future<void>> futures;
     start = clock();
-    for (i = 0; i < meta.number_of_threads - 1; ++i)
+    for (i = 0; i < meta.number_of_threads; ++i)
     {
         futures.push_back(std::async(std::launch::async, [&](){
             multithread_aggregate( i, meta.thread_offsets[i], meta.thread_offsets[i + 1]);
@@ -64,7 +65,7 @@ int main(void)
     // threads[i] = std::thread(multithread_aggregate_last, i, meta.thread_offsets[i]);
 
 
-    for (i = 0; i < meta.number_of_threads-1; ++i)
+    for (i = 0; i < meta.number_of_threads; ++i)
     {
         // if (threads[i].joinable())
         //     threads[i].join();
