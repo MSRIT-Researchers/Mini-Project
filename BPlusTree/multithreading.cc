@@ -23,12 +23,15 @@ using namespace bpt;
 void spawnChild(int i , int a , int b,bool flag){
     pid_t pid = fork();
     if(pid == 0){
+        clock_t start = clock();
         if(flag){
             multithread_aggregate(i,a,b);
         }
         else{
             multithread_aggregate_last(i,a);
         }
+        clock_t end = clock();
+        printf("time taken %f s\n",  (end - start) / (double)(CLOCKS_PER_SEC));
         exit(0);
     }
 }
