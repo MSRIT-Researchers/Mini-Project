@@ -102,7 +102,13 @@ void multithread_aggregate(const int thread_number, off_t start_leaf_offset, off
         }
         database.run_map(&temp, temp.next);
     }
-
+    if(end_leaf_offset==0){
+        for (int i = 0; i < temp.n; ++i)
+        {
+            sum += temp.children[i].value;
+            c++;
+        }
+    }
     // printf("sum : %lld\n", sum);
     threadResults[thread_number] = {sum, c};
 }
