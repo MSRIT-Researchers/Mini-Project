@@ -49,8 +49,8 @@ int main(){
 
 
     pid_t child_pid;
-
-    while ((child_pid = wait(nullptr)) > 0);
+    int  status;
+    while (child_pid=waitpid(-1,&status,0)!=-1);
     end = clock();
     printf("time taken %f s\n",  (end - start) / (double)(CLOCKS_PER_SEC));
 

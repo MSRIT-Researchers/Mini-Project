@@ -8,7 +8,8 @@
 #include <ctime>
 #include "bpt.h"
 #include "variables.h"
-#include <future>
+#include <chrono>
+
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -19,6 +20,10 @@ void multithread_aggregate(const int thread_number, off_t start_leaf_offset, off
 void multithread_aggregate_last(const int thread_number, off_t start_leaf_offset);
 
 using namespace bpt;
+uint64_t timeSinceEpochMillisec() {
+  using namespace std::chrono;
+  return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+}
 
 void spawnChild(int i , int a , int b,bool flag){
     pid_t pid = fork();
@@ -68,10 +73,10 @@ int main(void)
     printf("time taken by SingleThread: %f s\n", (end - start) / (double)(CLOCKS_PER_SEC));
 
 
-    std::vector<std::future<void>> futures;
+
     printf("starting time\n");
 
-    start = clock();
+uint64_t startc =timeSinceEpochMillisec();
     for (i = 0; i < meta.number_of_threads ; ++i){
 
         if(i == meta.number_of_threads - 1){
@@ -84,14 +89,20 @@ int main(void)
     }
 
         pid_t child_pid;
-
-    while ((child_pid = wait(nullptr)) > 0){
-        // printf("child %d terminated\n",child_pid);
+    int status;
+    for(i=0; i<meta.number_of_threads; i++){
+      child_pid=  wait(NULL);
+    //    std:: cout << "Got " << child_pid<< " done" << std::endl;
     }
 
-    end = clock();
-    printf("\ntime taken by Multithread: %f s\n", (end - start) / (double)(CLOCKS_PER_SEC));
-    double mtt = (end - start) / (double)(CLOCKS_PER_SEC);
+    // while (child_pid=wait(nullptr)>0){
+    //     printf("child %d terminated\n",child_pid);
+    // }
+uint64_t endc = timeSinceEpochMillisec();
+
+    // end = clock();
+    double mtt = (endc - startc)/1000.0;
+    printf("\ntime taken by Multithread: %f s\n", mtt);
 
     double percentage = (stt/mtt) ;
     printf("\nMultithreading is %fx faster than Single threading\n",percentage);
@@ -120,7 +131,7 @@ void multithread_aggregate(const int thread_number, off_t start_leaf_offset, off
         database.run_map(&temp, temp.next);
     }
 // 
-    // printf("sum : %lld\n", sum);
+    printf("sum : %lld\n", sum);
     threadResults[thread_number] = {sum, c};
 }
 
@@ -152,7 +163,7 @@ void multithread_aggregate_last(const int thread_number, off_t start_leaf_offset
         c++;
     }
     database.run_map(&temp, temp.next);
-    // printf("sum : %lld\n", sum);
+    printf("sum : %lld\n", sum);
 
     threadResults[thread_number] = {sum, c};
 }

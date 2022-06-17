@@ -3,6 +3,6 @@
 
 const char* DB_NAME = "test.db";
 const int THREAD_NUM = 5;
-const int RANGE = 1000000;
+const int RANGE = 100000;
 
 #endif
