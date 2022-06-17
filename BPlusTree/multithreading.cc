@@ -31,7 +31,7 @@ void spawnChild(int i , int a , int b){
         clock_t start = clock();
         multithread_aggregate(i,a,b);
         clock_t end = clock();
-        printf("time taken %f s\n",  (end - start) / (double)(CLOCKS_PER_SEC));
+        printf("time taken by thread %d is %f s\n", i, (end - start) / (double)(CLOCKS_PER_SEC));
         exit(0);
     }
 }
@@ -66,11 +66,9 @@ int main(void)
     double stt = (end - start) / (double)(CLOCKS_PER_SEC);
     printf("time taken by SingleThread: %f s\n", (end - start) / (double)(CLOCKS_PER_SEC));
 
-
-
     printf("starting time\n");
 
-uint64_t startc =timeSinceEpochMillisec();
+    uint64_t startc =timeSinceEpochMillisec();
     for (i = 0; i < meta.number_of_threads ; ++i){
         spawnChild(i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
 
@@ -118,8 +116,15 @@ void multithread_aggregate(const int thread_number, off_t start_leaf_offset, off
         }
         database.run_map(&temp, temp.next);
     }
+    if(end_leaf_offset==0){
+        for (int i = 0; i < temp.n; ++i)
+        {
+            sum += temp.children[i].value;
+            c++;
+        }
+    }
 // 
-    printf("sum : %lld\n", sum);
+    printf("sum : %lld\n", c);
     threadResults[thread_number] = {sum, c};
 }
 
