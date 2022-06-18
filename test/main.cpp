@@ -1,57 +1,52 @@
+// C program for passing value from
+// child process to parent process
 #include <bits/stdc++.h>
-#include <future>
-#include <sys/wait.h>
+#include <stdio.h>
+#include <sys/types.h>
 #include <unistd.h>
-
+#include <stdlib.h>
+#include <sys/wait.h>
+#define MAX 10
 using namespace std;
-vector<int> v;
-long long calc(int l , int r){
-    long long sum = 0;
-    for(int i = l; i <= r; i++){
-        sum += v[i];
-    }
 
-    return sum;
-}
-pid_t spawnChild(int l, int r){
+int fd[2];
+int arr[] = {0,0,0,0,0};
+int spawnChild(int i ){
     pid_t pid = fork();
     if(pid == 0){
-        long long sum = calc(l, r);
-        // cout<<sum<<endl;
+
+        // no need to use the read end of pipe here so close it
+        close(fd[0]);
+
+        // closing the standard output
+        close(1);	
+        arr[i] = 1;
+        write(fd[1], arr, sizeof(arr));
+
         exit(0);
     }
-    return pid;
+    else{
+        return pid;
+    }
 }
-
 int main(){
-    clock_t start, end;
-    int n = 40000000;
-    for(int i = 0 ;i<n;i++)v.push_back(1);
-    start = clock();
-    long long sum = 0;
-    for(int i = 0; i < n; i++){
-        sum += v[i];
-    }
 
-    end = clock();
-    printf("time taken %f s\n",  (end - start) / (double)(CLOCKS_PER_SEC));
-
-    start = clock();
-    int l =0 , r = n/10-1;
-    vector<long long> children(n/10),sumar(n/10);
     int i = 0;
-    while(r<n){
-        spawnChild(l,r);        
-        i++;
-        l= r+1;
-        r+=n/10;
-    }
+    pipe(fd);
+    cout<<fd[0]<<" "<<fd[1]<<endl;
+     spawnChild(0);
+     spawnChild(1);
 
 
-    pid_t child_pid;
-    int  status;
-    while (child_pid=waitpid(-1,&status,0)!=-1);
-    end = clock();
-    printf("time taken %f s\n",  (end - start) / (double)(CLOCKS_PER_SEC));
+    close(0);
 
+    // no need to use the write end of pipe here so close it
+    close(fd[1]);
+
+
+    // n stores the total bytes read successfully
+    // int n = read(fd[0], arr, sizeof(arr));
+    for ( i = 0;i < sizeof(arr)/sizeof(int); i++)
+        printf("%d ", arr[i]);
+   
 }

@@ -658,7 +658,7 @@ int bplus_tree::search(const key_t& key, value_t *value) const
         
                 printf("RUNNING COMPUTE THREAD OFFSETS\n");
 
-                for (int i = 0; i < node.n; i++)
+                for (size_t i = 0; i < node.n; i++)
                 {
                     compute_thread_offsets(node.children[i].child, i, MULTITHREADING_DEGREE/node.n);
                 }
@@ -753,7 +753,7 @@ off_t bplus_tree::search_leaf(off_t index, const key_t &key) const
     void bplus_tree::compute_thread_offsets_max( )
     {
         int number_of_threads = MULTITHREADING_DEGREE;
-        int child_number=0;
+        // int child_number=0;
 
         internal_node_t node;
         internal_node_t temp;
@@ -792,7 +792,7 @@ off_t bplus_tree::search_leaf(off_t index, const key_t &key) const
 
         int thread_offset_index = child_number*number_of_threads;
 
-        for(int i=0;i<node.n;i+=increment){
+        for(size_t i=0;i<node.n;i+=increment){
             map(&temp, node.children[i].child) ;
             int height = meta.height;
             while (height > 3) {
