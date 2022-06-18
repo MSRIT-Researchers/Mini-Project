@@ -5,14 +5,10 @@
 #include <queue>
 #include "multithreading.h"
 int main(){
-    
-    std::queue<int> q;
-    MultiThreadingBPT mtbpt(q);
 
-    while(!q.empty()){
-        std::cout<<q.front()<<std::endl;
-        q.pop();
-    }
+    MultiThreadingBPT mtbpt = MultiThreadingBPT();
+
+
     // crow::SimpleApp app; //define your crow application
 
     // //define your endpoint at the root directory

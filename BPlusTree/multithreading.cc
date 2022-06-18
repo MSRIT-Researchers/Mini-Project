@@ -20,7 +20,7 @@
 
 // using namespace bpt;
 
-    MultiThreadingBPT::MultiThreadingBPT(std::queue<int> &q ):serverQ(q){
+    MultiThreadingBPT::MultiThreadingBPT(){
 
         bpt::bplus_tree database(DB_NAME); 
         bpt::meta_t meta = database.get_meta();
@@ -29,14 +29,15 @@
         // set the last offset as zero
         meta.thread_offsets[number_of_threads] = 0;
 
+        for(int i=0; i<meta.number_of_threads; ++i){
+            this->thread_starts[i] = meta.thread_offsets[i];
+        }
 
-        double singleProcessTime = computeUsingSingleProcess();
+        // double singleProcessTime = computeUsingSingleProcess();
         double multiProcessesTime = computeUsingMultipleProcesses();
 
-        double percentage = (singleProcessTime/multiProcessesTime) ;
-        printf("Multiprocessing is %fx faster than a single process\n",percentage);
-        // this->serverQ.push(101);
-
+        // double percentage = (singleProcessTime/multiProcessesTime) ;
+        // printf("Multiprocessing is %fx faster than a single process\n",percentage);
     }
 
 
@@ -66,20 +67,31 @@
         printf(UNDERLINE "Multiple processes - Number of offsets: %ld\n\n" CLOSEUNDERLINE,meta.number_of_threads );
         for(size_t i=0; i<meta.number_of_threads; ++i){
             database.run_map(&leaf, meta.thread_offsets[i]);
-            printf("Process %lu runs from offset: %d\n",i, leaf.children[0].value);
+            printf("Process %lu runs from offset: %d and startnig at %d\n",i, leaf.children[0].value,thread_starts[i]);
         }
         printf("\n");
 
         uint64_t startTime =timeSinceEpochMillisec();
-        for (size_t i = 0; i < meta.number_of_threads ; ++i){
-            spawnChild(i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
-        }
 
-        // Wait for all processes to complete
-        for(size_t i=0; i<meta.number_of_threads; i++){
-        wait(NULL);
-        }
+        
+        // while(true){
+        //     bool flag = true;
+        //     for (size_t i = 0; i < meta.number_of_threads ; ++i){
+        //         if(thread_starts[i]<=meta.thread_offsets[i+1]){
+        //             printf("spawingng Thread: %d start: %d, end: %d\n", i,thread_starts[i], meta.thread_offsets[i+1]);
+        //             spawnChild(i, thread_starts[i],meta.thread_offsets[i+1]);
+        //             flag= false;
+        //         }
+        //     }
 
+        //     // Wait for all processes to complete
+        //     for(size_t i=0; i<meta.number_of_threads; i++){
+        //         wait(NULL);
+        //     }
+
+        //     if(flag)
+        //         break;
+        // }
         /// aggregate the results
         long long int fsum =0, fcount = 0;
         for(size_t i  =  0;i<meta.number_of_threads;i++){
@@ -123,11 +135,12 @@
        bpt::bplus_tree database(DB_NAME);
         bpt::leaf_node_t temp;
         database.run_map(&temp, start_leaf_offset);
-        while (temp.next != end_leaf_offset){
+        while (temp.next != end_leaf_offset && c<10000){
             for (size_t i = 0; i < temp.n; ++i){
                 sum += temp.children[i].value;
                 c++;
             }
+            // thread_starts[thread_number] = temp.next;
             database.run_map(&temp, temp.next);
         }
         if(end_leaf_offset==0){
@@ -136,40 +149,11 @@
                 c++;
             }
         }
-        // std::cout<<"Sum: "<<sum<<" Count: "<<c<<std::endl;
-        // this->serverQ.push(sum);
+
+        threadResults[thread_number] = {sum, c};
+        thread_starts[thread_number] = temp.next;
+
+
+        // printf("threadNum: %d sum %lld, count: %d\n", thread_number,sum, c);
         threadResults[thread_number] = {sum, c};
     }
-
-    // void multithread_aggregate_last(const int thread_number, off_t start_leaf_offset)
-    // {
-    //     printf("multithreaded here\n");
-    //     long long sum = 0;
-    //     long long c = 0;
-
-    //     bplus_tree database(DB_NAME);
-    //     leaf_node_t temp;
-    //     database.run_map(&temp, start_leaf_offset);
-
-    //     off_t end_leaf_offset = 0;
-
-    //     while (temp.next != end_leaf_offset)
-    //     {
-    //         for (int i = 0; i < temp.n; ++i)
-    //         {
-    //             sum += temp.children[i].value;
-    //             c++;
-    //         }
-    //         database.run_map(&temp, temp.next);
-    //     }
-
-    //     for (int i = 0; i < temp.n; ++i)
-    //     {
-    //         sum += temp.children[i].value;
-    //         c++;
-    //     }
-    //     database.run_map(&temp, temp.next);
-    //     // printf("sum : %lld\n", sum);
-
-    //     threadResults[thread_number] = {sum, c};
-    // }

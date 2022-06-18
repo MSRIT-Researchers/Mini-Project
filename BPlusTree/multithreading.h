@@ -1,7 +1,7 @@
 class MultiThreadingBPT{
     private:
-        std::queue<int>& serverQ;
         std::pair<long long, long long> threadResults[100];
+        off_t thread_starts[100];
     public: 
 
 
@@ -13,5 +13,5 @@ class MultiThreadingBPT{
         double computeUsingMultipleProcesses();
         uint64_t timeSinceEpochMillisec();
 
-        MultiThreadingBPT(std::queue<int> &q );
+        MultiThreadingBPT();
 };
