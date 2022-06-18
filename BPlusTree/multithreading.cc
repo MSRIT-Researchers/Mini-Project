@@ -52,6 +52,7 @@ int main(void)
     }   
     printf("\n");
 
+    meta.thread_offsets[number_of_threads] = 0;
     clock_t start, end;
     printf("starting time\n");
 
@@ -121,7 +122,6 @@ void multithread_aggregate(const int thread_number, off_t start_leaf_offset, off
             c++;
         }
     }
-// 
     printf("sum : %lld\n", c);
     threadResults[thread_number] = {sum, c};
 }
