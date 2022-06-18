@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
-#include <thread>
 #include <vector>
 #include <iostream>
 #include <algorithm>
@@ -31,7 +30,7 @@ void spawnChild(int i , int a , int b){
         clock_t start = clock();
         multithread_aggregate(i,a,b);
         clock_t end = clock();
-        printf("time taken by thread %d is %f s\n", i, (end - start) / (double)(CLOCKS_PER_SEC));
+        printf("time taken by process %d is %f s\n", i, (end - start) / (double)(CLOCKS_PER_SEC));
         exit(0);
     }
 }
@@ -42,15 +41,14 @@ int main(void)
     int i;
     meta_t meta = database.get_meta();
     int number_of_threads = meta.number_of_threads;
-    std::thread threads[meta.number_of_threads];
 
     leaf_node_t leaf;
 
     meta.thread_offsets[number_of_threads] = 0;
-    printf("Number of Threads: %ld \n\n",meta.number_of_threads );
+    printf("Number of Processes: %ld \n\n",meta.number_of_threads );
     for(int i=0; i<meta.number_of_threads; ++i){
          database.run_map(&leaf, meta.thread_offsets[i]);
-         printf("Thread %d offset : %d\n",i, leaf.children[0].value);
+         printf("Process %d offset : %d\n",i, leaf.children[0].value);
     }   
     printf("\n");
 
@@ -64,7 +62,7 @@ int main(void)
     // printf("Sum: %d, count: %d\n", ans.first, ans.second);
 
     double stt = (end - start) / (double)(CLOCKS_PER_SEC);
-    printf("time taken by SingleThread: %f s\n", (end - start) / (double)(CLOCKS_PER_SEC));
+    printf("time taken by Single Process: %f s\n", (end - start) / (double)(CLOCKS_PER_SEC));
 
     printf("starting time\n");
 
@@ -88,10 +86,10 @@ uint64_t endc = timeSinceEpochMillisec();
 
     // end = clock();
     double mtt = (endc - startc)/1000.0;
-    printf("\ntime taken by Multithread: %f s\n", mtt);
+    printf("\ntime taken by Multiprocessing: %f s\n", mtt);
 
     double percentage = (stt/mtt) ;
-    printf("\nMultithreading is %fx faster than Single threading\n",percentage);
+    printf("\nMultiprocessing is %fx faster than a single process\n",percentage);
   
     return 0;
 
