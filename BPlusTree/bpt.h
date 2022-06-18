@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-
+#include <iostream>
 #ifndef UNIT_TEST
 #include "predefined.h"
 #else
@@ -97,7 +97,12 @@ public:
 
         size_t size = sizeof(T);
         open_file();
-        fseek(fp, offset, SEEK_SET);
+        int num = fseek(fp, offset, SEEK_SET);
+        if(num<0){
+            std::cout<<"error"<<std::endl;
+            return -1;
+        }
+
         size_t rd = fread(block, size, 1, fp);
         close_file();
 
