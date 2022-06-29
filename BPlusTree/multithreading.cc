@@ -12,16 +12,19 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include "multithreading.h"
+#include <sys/ipc.h>
+#include <sys/msg.h>
 
 #define UNDERLINE "\033[4m"
 #define CLOSEUNDERLINE "\033[0m"
 
-
-
+    struct mesg_buffer {
+        long long sum;
+        long long count;
+    } message;
 // using namespace bpt;
 
     MultiThreadingBPT::MultiThreadingBPT(std::queue<int> &q ):serverQ(q){
-
         bpt::bplus_tree database(DB_NAME); 
         bpt::meta_t meta = database.get_meta();
 
@@ -29,16 +32,44 @@
         // set the last offset as zero
         meta.thread_offsets[number_of_threads] = 0;
 
-
-        double singleProcessTime = computeUsingSingleProcess();
+        // double singleProcessTime = computeUsingSingleProcess();
         double multiProcessesTime = computeUsingMultipleProcesses();
 
-        double percentage = (singleProcessTime/multiProcessesTime) ;
-        printf("Multiprocessing is %fx faster than a single process\n",percentage);
+        // double percentage = (singleProcessTime/multiProcessesTime) ;
+        // printf("Multiprocessing is %fx faster than a single process\n",percentage);
         // this->serverQ.push(101);
 
     }
 
+    void MultiThreadingBPT::sendDataToMessageQ(int sum, int count){
+        mesg_buffer message;
+        message.count = count;
+        message.sum = sum;
+
+        key_t key;
+        int msgid;
+        key = ftok("random", 65);
+        msgid = msgget(key, 0666 | IPC_CREAT);
+        // printf("sending data here\n");
+        int returnVal = msgsnd(msgid, &message, sizeof(message), 0);     
+        // printf("sent\n return value: %d", returnVal);   
+    }
+
+    void MultiThreadingBPT::listenToMessageQ(){
+        key_t key;
+        int msgid;
+        key = ftok("random", 65);
+        msgid = msgget(key, 0666 | IPC_CREAT);
+        struct mesg_buffer message;
+        int totalCount=0;
+        while(totalCount<THREAD_NUM*RANGE){
+            msgrcv(msgid, &message, sizeof(message), 0, 0);
+            printf("got sum: %lld, got count %lld\n", message.sum, message.count);
+            totalCount+=message.count;
+        }
+        
+        msgctl(msgid, IPC_RMID, NULL);
+    }
 
     void MultiThreadingBPT::spawnChild(int i , int startOffset , int endOffset){
         pid_t pid = fork();
@@ -66,19 +97,30 @@
         printf(UNDERLINE "Multiple processes - Number of offsets: %ld\n\n" CLOSEUNDERLINE,meta.number_of_threads );
         for(size_t i=0; i<meta.number_of_threads; ++i){
             database.run_map(&leaf, meta.thread_offsets[i]);
-            printf("Process %lu runs from offset: %d\n",i, leaf.children[0].value);
+            printf("Process %lu runs from offset with value: %d\n",i, leaf.children[0].value);
         }
         printf("\n");
 
+        pid_t pid = fork();
+        if(pid==0){
+            listenToMessageQ();
+            exit(0);
+        }
+
         uint64_t startTime =timeSinceEpochMillisec();
+        meta.thread_offsets[meta.number_of_threads] = 0;
         for (size_t i = 0; i < meta.number_of_threads ; ++i){
             spawnChild(i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
         }
 
+        
+
         // Wait for all processes to complete
         for(size_t i=0; i<meta.number_of_threads; i++){
-        wait(NULL);
+            wait(NULL);
         }
+
+        wait(NULL);
 
         /// aggregate the results
         long long int fsum =0, fcount = 0;
@@ -110,7 +152,6 @@
         
         end = timeSinceEpochMillisec();
 
-
         double singleProcessTime = (end - start)/1000.0;
         printf("time taken by Single Process: %f s\n\n\n\n", singleProcessTime);
         return singleProcessTime;
@@ -125,6 +166,7 @@
         database.run_map(&temp, start_leaf_offset);
         while (temp.next != end_leaf_offset){
             for (size_t i = 0; i < temp.n; ++i){
+                
                 sum += temp.children[i].value;
                 c++;
             }
@@ -138,6 +180,9 @@
         }
         // std::cout<<"Sum: "<<sum<<" Count: "<<c<<std::endl;
         // this->serverQ.push(sum);
+
+        printf("Done Processing Thread:%d\n", thread_number);
+        sendDataToMessageQ(sum, c);
         threadResults[thread_number] = {sum, c};
     }
 
