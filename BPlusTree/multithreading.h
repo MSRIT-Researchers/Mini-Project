@@ -1,9 +1,13 @@
+struct mesg_buffer {
+            long long sum;
+            long long count;
+};
+
 class MultiThreadingBPT{
     private:
-        std::queue<int>& serverQ;
         std::pair<long long, long long> threadResults[100];
     public: 
-
+        
         void sendDataToMessageQ(int sum, int count);
         void listenToMessageQ();
         void multithread(int left, int right, const int threadNumber);
@@ -14,5 +18,5 @@ class MultiThreadingBPT{
         double computeUsingMultipleProcesses();
         uint64_t timeSinceEpochMillisec();
 
-        MultiThreadingBPT(std::queue<int> &q );
+        MultiThreadingBPT();
 };

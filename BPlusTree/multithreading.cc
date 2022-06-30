@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <ctime>
 #include "bpt.h"
-#include "variables.h"
 #include <chrono>
 #include <queue>
 #include <sys/wait.h>
@@ -14,17 +13,14 @@
 #include "multithreading.h"
 #include <sys/ipc.h>
 #include <sys/msg.h>
+#include "variables.h"
 
 #define UNDERLINE "\033[4m"
 #define CLOSEUNDERLINE "\033[0m"
 
-    struct mesg_buffer {
-        long long sum;
-        long long count;
-    } message;
 // using namespace bpt;
 
-    MultiThreadingBPT::MultiThreadingBPT(std::queue<int> &q ):serverQ(q){
+    MultiThreadingBPT::MultiThreadingBPT() {
         bpt::bplus_tree database(DB_NAME); 
         bpt::meta_t meta = database.get_meta();
 
@@ -101,12 +97,6 @@
         }
         printf("\n");
 
-        pid_t pid = fork();
-        if(pid==0){
-            listenToMessageQ();
-            exit(0);
-        }
-
         uint64_t startTime =timeSinceEpochMillisec();
         meta.thread_offsets[meta.number_of_threads] = 0;
         for (size_t i = 0; i < meta.number_of_threads ; ++i){
@@ -119,9 +109,6 @@
         for(size_t i=0; i<meta.number_of_threads; i++){
             wait(NULL);
         }
-
-        wait(NULL);
-
         /// aggregate the results
         long long int fsum =0, fcount = 0;
         for(size_t i  =  0;i<meta.number_of_threads;i++){

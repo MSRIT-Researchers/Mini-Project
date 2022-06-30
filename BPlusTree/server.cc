@@ -4,15 +4,33 @@
 #include <unordered_set>
 #include <queue>
 #include "multithreading.h"
-int main(){
-    
-    std::queue<int> q;
-    MultiThreadingBPT mtbpt(q);
+#include <sys/ipc.h>
+#include <sys/msg.h>
+#include "bpt.h"
 
-    while(!q.empty()){
-        std::cout<<q.front()<<std::endl;
-        q.pop();
+//#include "variables.h"
+int main(){
+
+    pid_t pid = fork();
+    if(pid==0){
+        MultiThreadingBPT mtbpt = MultiThreadingBPT();
+        exit(0);
     }
+    
+        key_t key;
+        int msgid;
+        key = ftok("random", 65);
+        msgid = msgget(key, 0666 | IPC_CREAT);
+        struct mesg_buffer message;
+        int totalCount=0;
+        while(totalCount<10*5000){
+            msgrcv(msgid, &message, sizeof(message), 0, 0);
+            printf("got sum: %lld, got count %lld\n", message.sum, message.count);
+            totalCount+=message.count;
+        }
+        
+        msgctl(msgid, IPC_RMID, NULL);
+
     // crow::SimpleApp app; //define your crow application
 
     // //define your endpoint at the root directory
