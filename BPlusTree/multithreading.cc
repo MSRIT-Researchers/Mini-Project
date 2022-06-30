@@ -129,7 +129,7 @@
             fcount += threadResults[i].second;
         }
 
-        printf("Sum: %lld, count: %lld\n", fsum, fcount);   
+        // printf("Sum: %lld, count: %lld\n", fsum, fcount);   
         
         uint64_t endTime = timeSinceEpochMillisec();
 
@@ -148,7 +148,7 @@
         
         printf(UNDERLINE "\nSingle Process\n\n" CLOSEUNDERLINE);
         multithread_aggregate(0, meta.thread_offsets[0], 0);
-        printf("Sum : %lld ,Count : %lld \n", threadResults[0].first,threadResults[0].second);
+        // printf("Sum : %lld ,Count : %lld \n", threadResults[0].first,threadResults[0].second);
         
         end = timeSinceEpochMillisec();
 
@@ -172,18 +172,16 @@
             }
             database.run_map(&temp, temp.next);
         }
-        if(end_leaf_offset==0){
-            for (size_t i = 0; i < temp.n; ++i){
+        // if(end_leaf_offset==0){
+        for (size_t i = 0; i < temp.n; ++i){
                 sum += temp.children[i].value;
                 c++;
-            }
         }
         // std::cout<<"Sum: "<<sum<<" Count: "<<c<<std::endl;
         // this->serverQ.push(sum);
 
         printf("Done Processing Thread:%d\n", thread_number);
         sendDataToMessageQ(sum, c);
-        threadResults[thread_number] = {sum, c};
     }
 
     // void multithread_aggregate_last(const int thread_number, off_t start_leaf_offset)
