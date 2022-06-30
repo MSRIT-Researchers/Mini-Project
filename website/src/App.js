@@ -3,24 +3,45 @@ import {useState,useEffect} from 'react';
 import './App.css';
 import {io} from 'socket.io-client';
 function App() {
-  const ws = new WebSocket("ws://localhost:18080/ws");
+  let ws;
+  let [count,setCount] = useState(0);
 
-  ws.onmessage = function (event) {
+ 
+    // ws.onopen = (event) => {
+    //   ws.send(JSON.stringify("Hi there"));
+    // };
+    
+  useEffect(() => {
+    ws = new WebSocket("ws://localhost:18094/ws");
+    ws.onmessage = function (event) {
 
-    try {
-            console.log(event.data);
-        
-      } catch (err) {
-        console.log(err);
-      } 
-    };
-    
-    ws.onopen = (event) => {
-      ws.send(JSON.stringify("Hi there"));
-    };
-    
-    useEffect(() => {
+      try {
+              console.log(event.data);
+          setCount(Number(event.data))
+        } catch (err) {
+          console.log(err);
+        } 
+      };
+      
   }, []);
+
+  function sendData(text)
+  {
+    console.log("sending. . . ")
+      if(ws && ws.readyState)
+      {
+          ws.send(JSON.stringify(text));
+      }
+      else
+      {
+        console.log("trying to send ")
+          setTimeout(sendData, 1000);
+      }
+  }
+
+  const handleOnCLickVisualize = ()=>{
+    sendData("Start");
+  }
   
   return (
     <div className="App">
@@ -35,8 +56,10 @@ function App() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Learn React
+          {count}
         </a>
+        <button onClick={handleOnCLickVisualize}>Visualize</button>
+     
       </header>
     </div>
   );

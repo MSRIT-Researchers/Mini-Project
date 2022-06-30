@@ -9,59 +9,71 @@
 #include "bpt.h"
 
 //#include "variables.h"
-int main(){
-
+void init(){
     pid_t pid = fork();
     if(pid==0){
         MultiThreadingBPT mtbpt = MultiThreadingBPT();
         exit(0);
     }
     
-        key_t key;
+      
+}
+
+void listenToStream(crow::websocket::connection* user){
+      key_t key;
         int msgid;
         key = ftok("random", 65);
         msgid = msgget(key, 0666 | IPC_CREAT);
         struct mesg_buffer message;
         int totalCount=0;
         while(totalCount<10*50000){
+
+            usleep(200*1000);
             msgrcv(msgid, &message, sizeof(message), 0, 0);
             // printf("got sum: %lld, got count %lld\n", message.sum, message.count);
             printf("Processed %d records\n", totalCount);
+            std::string str = "Processed"+std::to_string(totalCount)+" records\n";
+            user->send_text(std::to_string(totalCount));
             totalCount+=message.count;
         }
-        
         msgctl(msgid, IPC_RMID, NULL);
+}
+int main(){
 
-    // crow::SimpleApp app; //define your crow application
+    
+    crow::SimpleApp app; //define your crow application
 
-    // //define your endpoint at the root directory
-    // CROW_ROUTE(app, "/")([](){
-    //     return "Hello world";
-    // });
+    //define your endpoint at the root directory
+    CROW_ROUTE(app, "/")([](){
+        return "Hello world";
+    });
 
-    // std::mutex mtx;
-    // std::unordered_set<crow::websocket::connection*> users;
-    // // Websoket server
-    // CROW_WEBSOCKET_ROUTE(app, "/ws")
-    //   .onopen([&](crow::websocket::connection& conn) {
-    //       CROW_LOG_INFO << "new websocket connection from " << conn.get_remote_ip();
-    //       std::lock_guard<std::mutex> _(mtx);
-    //       users.insert(&conn);
-    //   })
-    //   .onclose([&](crow::websocket::connection& conn, const std::string& reason) {
-    //       CROW_LOG_INFO << "websocket connection closed: " << reason;
-    //       std::lock_guard<std::mutex> _(mtx);
-    //       users.erase(&conn);
-    //   })
-    //   .onmessage([&](crow::websocket::connection& /*conn*/, const std::string& data, bool is_binary) {
-    //       std::lock_guard<std::mutex> _(mtx);
-    //       std::cout<<data<<std::endl;
-    //       for (auto u : users)
-    //           if (is_binary)
-    //               u->send_binary(data);
-    //           else
-    //               u->send_text(data);
-    //   });
-    // //set the port, set the app to run on multiple threads, and run the app
-    // app.port(18080).multithreaded().run();
+    std::mutex mtx;
+    std::unordered_set<crow::websocket::connection*> users;
+    // Websoket server
+    CROW_WEBSOCKET_ROUTE(app, "/ws")
+      .onopen([&](crow::websocket::connection& conn) {
+          CROW_LOG_INFO << "new websocket connection from " << conn.get_remote_ip();
+          std::lock_guard<std::mutex> _(mtx);
+          users.insert(&conn);
+
+      })
+      .onclose([&](crow::websocket::connection& conn, const std::string& reason) {
+          CROW_LOG_INFO << "websocket connection closed: " << reason;
+          std::lock_guard<std::mutex> _(mtx);
+          users.erase(&conn);
+      })
+      .onmessage([&](crow::websocket::connection& /*conn*/, const std::string& data, bool is_binary) {
+          std::lock_guard<std::mutex> _(mtx);
+          std::cout<<data<<std::endl;
+        //   if(data=="Start"){
+            init();
+            auto u = *users.begin();
+            for (auto u : users){
+                listenToStream(u);
+            }
+        //   }
+      });
+    //set the port, set the app to run on multiple threads, and run the app
+    app.port(18094).multithreaded().run();
 }
