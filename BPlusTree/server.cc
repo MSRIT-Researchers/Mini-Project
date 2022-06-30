@@ -23,9 +23,10 @@ int main(){
         msgid = msgget(key, 0666 | IPC_CREAT);
         struct mesg_buffer message;
         int totalCount=0;
-        while(totalCount<10*5000){
+        while(totalCount<10*50000){
             msgrcv(msgid, &message, sizeof(message), 0, 0);
-            printf("got sum: %lld, got count %lld\n", message.sum, message.count);
+            // printf("got sum: %lld, got count %lld\n", message.sum, message.count);
+            printf("Processed %d records\n", totalCount);
             totalCount+=message.count;
         }
         

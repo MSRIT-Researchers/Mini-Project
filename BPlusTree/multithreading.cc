@@ -153,9 +153,13 @@
         database.run_map(&temp, start_leaf_offset);
         while (temp.next != end_leaf_offset){
             for (size_t i = 0; i < temp.n; ++i){
-                
                 sum += temp.children[i].value;
                 c++;
+            }
+            if(c>=1000){
+                sendDataToMessageQ(sum, c);
+                c=0;
+                sum=0;
             }
             database.run_map(&temp, temp.next);
         }
