@@ -27,20 +27,22 @@ void listenToStream(crow::websocket::connection* user){
         msgid = msgget(key, 0666 | IPC_CREAT);
         struct mesg_buffer message;
         int totalCount=0;
-        while(totalCount<10*50000){
+        int c= 10;
+        while(totalCount<10*50000 && c--){
 
             // usleep(200*1000);
             msgrcv(msgid, &message, sizeof(message), 0, 0);
             // printf("got sum: %lld, got count %lld\n", message.sum, message.count);
             printf("Processed %d records\n", totalCount);
-            std::string str = "Processed"+std::to_string(totalCount)+" records\n";
+            // std::string str = "Processed"+std::to_string(totalCount)+" records\n";
             user->send_text(std::to_string(totalCount));
+
             totalCount+=message.count;
         }
         msgctl(msgid, IPC_RMID, NULL);
 }
 int main(){
-
+    
     
     crow::SimpleApp app; //define your crow application
 
@@ -68,14 +70,21 @@ int main(){
           std::lock_guard<std::mutex> _(mtx);
           std::cout<<data<<std::endl;
           if(data=="Start"){
-            init();
-
-            for (auto u : users){
-                listenToStream(u);
+            for(long long i = 1;i<=1e11;i++){
+                for (auto u : users){
+                    printf("Sending %lld\n", i);
+                    u->send_text(std::to_string(i));
+                }
             }
+            // init();
+
+            // for (auto u : users){
+            //     listenToStream(u);
+            // }
           }
           else if(data=="kill"){
               app.stop();
+              wait(NULL);
           }
       });
     //set the port, set the app to run on multiple threads, and run the app
