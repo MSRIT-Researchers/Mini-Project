@@ -12,7 +12,7 @@ function App() {
     // };
     
   useEffect(() => {
-    ws = new WebSocket("ws://localhost:18094/ws");
+    ws = new WebSocket("ws://localhost:18914/ws");
     ws.onmessage = function (event) {
 
       try {
@@ -30,7 +30,7 @@ function App() {
     console.log("sending. . . ")
       if(ws && ws.readyState)
       {
-          ws.send(JSON.stringify(text));
+          ws.send(text);
       }
       else
       {
@@ -41,6 +41,9 @@ function App() {
 
   const handleOnCLickVisualize = ()=>{
     sendData("Start");
+  }
+  const handleOnClickStop = () =>{
+    sendData("kill")
   }
   
   return (
@@ -59,7 +62,8 @@ function App() {
           {count}
         </a>
         <button onClick={handleOnCLickVisualize}>Visualize</button>
-     
+        <button onClick={handleOnClickStop}>Stop</button>
+
       </header>
     </div>
   );

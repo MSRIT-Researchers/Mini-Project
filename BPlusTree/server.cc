@@ -7,7 +7,7 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include "bpt.h"
-
+#include <sys/wait.h>
 //#include "variables.h"
 void init(){
     pid_t pid = fork();
@@ -20,6 +20,7 @@ void init(){
 }
 
 void listenToStream(crow::websocket::connection* user){
+
       key_t key;
         int msgid;
         key = ftok("random", 65);
@@ -28,7 +29,7 @@ void listenToStream(crow::websocket::connection* user){
         int totalCount=0;
         while(totalCount<10*50000){
 
-            usleep(200*1000);
+            // usleep(200*1000);
             msgrcv(msgid, &message, sizeof(message), 0, 0);
             // printf("got sum: %lld, got count %lld\n", message.sum, message.count);
             printf("Processed %d records\n", totalCount);
@@ -66,14 +67,17 @@ int main(){
       .onmessage([&](crow::websocket::connection& /*conn*/, const std::string& data, bool is_binary) {
           std::lock_guard<std::mutex> _(mtx);
           std::cout<<data<<std::endl;
-        //   if(data=="Start"){
+          if(data=="Start"){
             init();
-            auto u = *users.begin();
+
             for (auto u : users){
                 listenToStream(u);
             }
-        //   }
+          }
+          else if(data=="kill"){
+              app.stop();
+          }
       });
     //set the port, set the app to run on multiple threads, and run the app
-    app.port(18094).multithreaded().run();
+    app.port(18914).multithreaded().run();
 }
