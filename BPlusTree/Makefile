@@ -78,7 +78,7 @@ server: server.cc multithreading.o
 	g++ server.cc multithreading.o bpt.o -o server -L /usr/lib/ -lboost_system -lboost_thread -lpthread
 
 run_insert :
-	rm test.db && make insertDb && make multithreading && touch test.db && ./insert
+	touch test.db && rm test.db && make insertDb && touch test.db && ./insert
 %.o: %.cc
 	$(QUIET_CC)$(CXX) -o $@ -c $(CFLAGS) $(TEST) $(DEBUG) $(COMPILE_TIME) $<
 
