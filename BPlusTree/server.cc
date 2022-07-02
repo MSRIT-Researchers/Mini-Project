@@ -17,12 +17,9 @@ void init(){
         MultiThreadingBPT mtbpt = MultiThreadingBPT();
         exit(0);
     }
-    
-      
 }
 
 void listenToStream(crow::websocket::connection* user){
-
       key_t key;
         int msgid;
         key = ftok("random", 65);
@@ -31,7 +28,6 @@ void listenToStream(crow::websocket::connection* user){
         int totalCount=0;
         int c= 10;
         while(totalCount<10*50000 && c--){
-
             // usleep(200*1000);
             msgrcv(msgid, &message, sizeof(message), 0, 0);
             // printf("got sum: %lld, got count %lld\n", message.sum, message.count);
@@ -43,6 +39,7 @@ void listenToStream(crow::websocket::connection* user){
         }
         msgctl(msgid, IPC_RMID, NULL);
 }
+
 int main(){
     
     
@@ -55,12 +52,16 @@ int main(){
 
     std::mutex mtx;
     std::unordered_set<crow::websocket::connection*> users;
+    crow::websocket::connection* current;
+    long long i = 1;
     // Websoket server
     CROW_WEBSOCKET_ROUTE(app, "/ws")
       .onopen([&](crow::websocket::connection& conn) {
           CROW_LOG_INFO << "new websocket connection from " << conn.get_remote_ip();
           std::lock_guard<std::mutex> _(mtx);
           users.insert(&conn);
+          current = &conn;
+          i=1;
 
       })
       .onclose([&](crow::websocket::connection& conn, const std::string& reason) {
@@ -72,17 +73,12 @@ int main(){
           std::lock_guard<std::mutex> _(mtx);
           std::cout<<data<<std::endl;
           if(data=="Start"){
-            for(long long i = 1;i<=1e11;i++){
-                for (auto u : users){
+            // for(;i<=10;i++){
+                if(i<10000){
                     printf("Sending %lld\n", i);
-                    u->send_text(std::to_string(i));
+                    current->send_text(std::to_string(i));                    
+                    i++;
                 }
-            }
-            // init();
-
-            // for (auto u : users){
-            //     listenToStream(u);
-            // }
           }
           else if(data=="kill"){
               app.stop();

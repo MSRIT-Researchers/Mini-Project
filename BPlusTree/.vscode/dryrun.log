@@ -1,0 +1,9 @@
+make --dry-run --always-make --keep-going --print-directory
+make: Entering directory '/home/sahil/code/college/Mini-Project/BPlusTree'
+printf '    %b %b\n' "\033[34m"CXX"\033[0m" "\033[33m"bpt.o"\033[0m";g++ -o bpt.o -c -O2  -g -ggdb  bpt.cc
+printf '    %b %b\n' "\033[34m"CXX"\033[0m" "\033[33m"util/dump_numbers.o"\033[0m";g++ -o util/dump_numbers.o -c -O2  -g -ggdb  util/dump_numbers.cc
+printf '    %b %b\n' "\033[34;1m"LINK"\033[0m" "\033[37;1m"bpt_dump_numbers"\033[0m";g++ -o bpt_dump_numbers -O2   -g -ggdb bpt.o util/dump_numbers.o 
+printf '    %b %b\n' "\033[34m"CXX"\033[0m" "\033[33m"util/cli.o"\033[0m";g++ -o util/cli.o -c -O2  -g -ggdb  util/cli.cc
+printf '    %b %b\n' "\033[34;1m"LINK"\033[0m" "\033[37;1m"bpt_cli"\033[0m";g++ -o bpt_cli -O2   -g -ggdb bpt.o util/cli.o 
+make: Leaving directory '/home/sahil/code/college/Mini-Project/BPlusTree'
+ 
