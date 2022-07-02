@@ -8,6 +8,8 @@
 #include <sys/msg.h>
 #include "bpt.h"
 #include <sys/wait.h>
+#include <fstream>
+
 //#include "variables.h"
 void init(){
     pid_t pid = fork();
@@ -88,5 +90,10 @@ int main(){
           }
       });
     //set the port, set the app to run on multiple threads, and run the app
-    app.port(18914).multithreaded().run();
+
+    std::ifstream MyFile("../website/src/serverport");
+    std::string port;
+    getline(MyFile,port);
+    int port_num = stoi(port);
+    app.port(port_num).multithreaded().run();
 }

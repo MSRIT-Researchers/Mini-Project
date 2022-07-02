@@ -9,8 +9,7 @@
           "focus": true,
           "commands": [
               "cd BPlusTree",
-              "make server",
-              "./server"
+              "make server  && ./server"
           ]
       },
       {

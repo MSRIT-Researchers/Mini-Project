@@ -2,6 +2,7 @@ import logo from './logo.svg';
 import {useState,useEffect} from 'react';
 import './App.css';
 import {io} from 'socket.io-client';
+import portNo from "./serverport"
 function App() {
   let ws;
   let [count,setCount] = useState(0);
@@ -11,17 +12,24 @@ function App() {
     //   ws.send(JSON.stringify("Hi there"));
     // };
     
-  useEffect(() => {
-    ws = new WebSocket("ws://localhost:18914/ws");
-    ws.onmessage = function (event) {
+    async function init(){
+      
 
-      try {
-              console.log(event.data);
-          setCount(Number(event.data))
-        } catch (err) {
-          console.log(err);
-        } 
-      };
+      // get the port number from ../serverport
+      let port = (await fetch(portNo)).text()
+  
+      ws = new WebSocket(`ws://localhost:${port}/ws`);
+      ws.onmessage = function (event) {
+  
+        try {
+                console.log(event.data);
+            setCount(Number(event.data))
+          } catch (err) {
+            console.log(err);
+          } 
+        };
+    }
+  useEffect(() => {
       
   }, []);
 
