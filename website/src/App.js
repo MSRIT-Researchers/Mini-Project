@@ -16,8 +16,8 @@ function App() {
       
 
       // get the port number from ../serverport
-      let port = (await fetch(portNo)).text()
-  
+      let port = await (await fetch(portNo)).text()
+      console.log(port)
       ws = new WebSocket(`ws://localhost:${port}/ws`);
       ws.onmessage = function (event) {
   
@@ -30,7 +30,7 @@ function App() {
         };
     }
   useEffect(() => {
-      
+      init();
   }, []);
 
   function sendData(text)
