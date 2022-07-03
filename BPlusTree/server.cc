@@ -75,13 +75,12 @@ int main(){
           std::lock_guard<std::mutex> _(mtx);
           std::cout<<data<<std::endl;
           if(data=="Start"){
-                // if(count==0){
-                //     init(&count);
-                // }
-                if(i<=10000){
-                    printf("Sending %lld\n", i);
-                    current->send_text(std::to_string(i));    
-                    i++;                
+                if(count==0){
+                    init(&count);
+                }
+                if(count<=10*50000){
+                    printf("Sending %lld\n", count);
+                    current->send_text(std::to_string(count));                
                 }
           }
           else if(data=="kill"){

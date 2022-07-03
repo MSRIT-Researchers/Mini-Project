@@ -20,7 +20,10 @@ function App() {
       ws.onmessage = function (event) {
         console.log('Message from server ', event.data);
         setCount(event.data);
-        ws.send("Start");
+        setTimeout(()=>{
+          ws.send("Start");
+        }, 1000);
+        
       };
 
   }
