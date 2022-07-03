@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import './App.css';
+import playicon from './play_icon.png';
 import { io } from 'socket.io-client';
 import portNo from "./serverport"
 import * as Highcharts from "highcharts";
@@ -8,7 +9,7 @@ function App() {
 
   let [ws, setWs] = useState(null);
   let [count, setCount] = useState(0);
-  let [chartCount, setChartCount] = useState(
+  /*let [chartCount, setChartCount] = useState(
     Highcharts.chart('progressive-visualization', {
       chart: {
         type: 'solidgauge'
@@ -44,7 +45,7 @@ function App() {
       }]
 
     })
-  );
+  );*/
   let [status, setStatus] = useState("");
   // ws.onopen = (event) => {
   //   ws.send(JSON.stringify("Hi there"));
@@ -62,13 +63,13 @@ function App() {
       ws.onmessage = function (event) {
         console.log('Message from server ', event.data);
         setCount(event.data);
-        setChartCount(Highcharts.chart('progressive-visualization', {
+        /*setChartCount(Highcharts.chart('progressive-visualization', {
           chart: {
             type: 'solidgauge'
           },
-    
+
           title: null,
-    
+
           yAxis: {
             min: 0,
             max: 200,
@@ -96,7 +97,7 @@ function App() {
             }
           }]
 
-        }));
+        }));*/
       };
   }, [ws])
   useEffect(() => {
@@ -189,10 +190,10 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <button onClick={handleOnCLickVisualize}>Visualize</button>
-        <button onClick={handleOnClickStop}>Stop</button>
+        <button onClick={handleOnCLickVisualize} style={{ top: '35%' }}><img src={playicon} alt="play"></img></button>
+        <button onClick={handleOnClickStop} style={{ top: '60%' }}>Stop</button>
         <div style={{ display: 'flex', flexDirection: 'row', height: '100vh', width: "100%" }}>
-          <div className="Column" style={{ borderRight: "1px solid #95afc0" }}>{chartCount}</div>
+          <div className="Column" style={{ borderRight: "1px solid #95afc0" }}></div>
           <div className="Column" style={{ borderLeft: "1px solid #95afc0" }}>{count}</div>
         </div>
 

@@ -29,6 +29,18 @@
   background-color: #1E1F24
 }
 
+button {
+  height: 100px;
+  width: 100px;
+  border-radius: 100px;
+  position: absolute;
+  background-color: #BEE7BB;
+}
+
+img {
+  width: 40px;
+}
+
 
 .App-link {
   color: #61dafb;
