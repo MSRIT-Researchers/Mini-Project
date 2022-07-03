@@ -70,10 +70,7 @@
     void MultiThreadingBPT::spawnChild(int i , int startOffset , int endOffset){
         pid_t pid = fork();
         if(pid == 0){
-            // clock_t start = clock();
             multithread_aggregate(i,startOffset,endOffset);
-            // clock_t end = clock();
-            // printf("time taken by process %d is %f s\n", i, (end - start) / (double)(CLOCKS_PER_SEC));
             exit(0);
         }
     }
@@ -171,7 +168,7 @@
         // std::cout<<"Sum: "<<sum<<" Count: "<<c<<std::endl;
         // this->serverQ.push(sum);
 
-        printf("Done Processing Thread:%d\n", thread_number);
+        printf("Done Processing Thread: %d\n", thread_number);
         sendDataToMessageQ(sum, c);
     }
 

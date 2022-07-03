@@ -26,11 +26,12 @@ void listenToStream(){
             // printf("sending message2.count %lld\n", message2.count);
             msgsnd(msgid2, &message2, sizeof(message2), 0);     
         }
+
         printf("totalCount %d\n", totalCount);
         msgctl(msgid, IPC_RMID, NULL);
 }
 
-void init(int *count){
+void init(){
     pid_t pid = fork();
     if(pid==0){
         MultiThreadingBPT mtbpt = MultiThreadingBPT();
@@ -66,9 +67,7 @@ int main(){
     std::unordered_set<crow::websocket::connection*> users;
     crow::websocket::connection* current;
     long long i = 1;
-    int count =0;
 
-    // init(&count);
     // Websoket server
     CROW_WEBSOCKET_ROUTE(app, "/ws")
       .onopen([&](crow::websocket::connection& conn) {
@@ -76,7 +75,6 @@ int main(){
           std::lock_guard<std::mutex> _(mtx);
           users.insert(&conn);
           current = &conn;
-          count=0;
           i=0;
 
       })
@@ -88,14 +86,12 @@ int main(){
       .onmessage([&](crow::websocket::connection& /*conn*/, const std::string& data, bool is_binary) {
           std::lock_guard<std::mutex> _(mtx);
           if(data=="start"){
-          std::cout<<data<<std::endl;
+                std::cout<<data<<std::endl;
                 message2.count = 0;
-                count = 0;
-                init(&count);
-            
+                init();
           }
           else if(data=="ping"){
-                if(message2.count<=10*50000){
+                if(message2.count<10*50000){
                     msgrcv(msgid2, &message2, sizeof(message2), 0, 0);
                     // printf("Sending %d\n", message2.count);
                     current->send_text(std::to_string(message2.count));                
