@@ -4,8 +4,10 @@ import playicon from './play_icon.png';
 import { io } from 'socket.io-client';
 import portNo from "./serverport"
 //import * as Highcharts from "highcharts";
-import Highcharts from 'highcharts/highstock';
-import HighchartsReact from 'highcharts-react-official';
+//import Highcharts from 'highcharts/highstock';
+//import HighchartsReact from 'highcharts-react-official';
+import '../node_modules/bootstrap/dist/css/bootstrap.min.css';
+import Chart from 'react-google-charts'
 
 function App() {
 
@@ -153,7 +155,7 @@ function App() {
     setStatus("kill")
   }
 
-
+  /*
   var chartCount = Highcharts.chart('progressive-visualization', {
 
     yAxis: {
@@ -203,6 +205,7 @@ function App() {
     point.update(newVal);
 
   }, 2000);
+  */
 
   return (
     <div className="App">
@@ -211,11 +214,7 @@ function App() {
         <button onClick={handleOnClickStop} style={{ top: '60%' }}>Stop</button>
         <div style={{ display: 'flex', flexDirection: 'row', height: '100vh', width: "100%" }}>
           <div className="Column" style={{ borderRight: "1px solid #95afc0" }}>
-            <HighchartsReact
-              highcharts={Highcharts}
-              constructorType={'stockChart'}
-              options={options}
-            />
+
           </div>
           <div className="Column" style={{ borderLeft: "1px solid #95afc0" }}>{count}</div>
         </div>
