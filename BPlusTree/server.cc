@@ -17,17 +17,18 @@ void listenToStream(){
         int msgid2 = msgget(key2, 0666 | IPC_CREAT);
         struct mesg_buffer message, message2;
         int totalCount=0;
-        while(totalCount<10*5000){
+        long long sum = 0;
+        while(totalCount<10*10300){
             msgrcv(msgid, &message, sizeof(message), 0, 0);
             // printf("Processed %d records\n", totalCount);
             totalCount+=message.count;
             message2.count = totalCount;
-            message2.sum = 1;
+            sum+=message2.sum; 
             // printf("sending message2.count %lld\n", message2.count);
             msgsnd(msgid2, &message2, sizeof(message2), 0);     
         }
 
-        printf("totalCount %d\n", totalCount);
+        printf("totalCount %d totalSum %lld \n", totalCount, sum);
         msgctl(msgid, IPC_RMID, NULL);
 }
 
@@ -48,8 +49,8 @@ void init(){
 }
 
 int main(){
-        MultiThreadingBPT mtbpt = MultiThreadingBPT();
-
+    init();
+    while(wait(NULL)>0);
 }
 // int main(){
     

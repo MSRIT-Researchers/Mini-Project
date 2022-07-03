@@ -1,7 +1,7 @@
 #include "bpt.h"
 
 #include <stdlib.h>
-
+#include <queue>
 #include <list>
 #include <algorithm>
 using std::binary_search;
@@ -288,6 +288,12 @@ int bplus_tree::search(const key_t& key, value_t *value) const
             insert_record_no_split(&leaf, key, value);
             unmap(&leaf, offset);
         }
+        
+        internal_node_t parent_node;
+        map(&parent_node, parent);
+        
+        if( meta.height > HEIGHT_CUTOFF_FOR_MULTITHREADING )
+            compute_thread_offsets_level_order(parent_node,value);
 
         return 0;
     }
@@ -647,21 +653,26 @@ int bplus_tree::search(const key_t& key, value_t *value) const
         // printf("MSRIT Researchers\n");
         if (node.parent == 0 && meta.height>HEIGHT_CUTOFF_FOR_MULTITHREADING) //if node is the root
         {
-            if (node.n == meta.order)
-            {
-                printf("RUNNING COMPUTE THREAD MAXX! OFFSETS\n");
-                compute_thread_offsets_max();
-            }
-            else
-            {
-                printf("RUNNING COMPUTE THREAD OFFSETS\n");
+            // printf("level order tgraversal\n");
+            // compute_thread_offsets_level_order(node,value);
+            // printf("%d\n", value);
+            // compute_thread_offsets_level_order(node,MULTITHREADING_DEGREE);
 
-                for (size_t i = 0; i < node.n; i++)
-                {
-                    compute_thread_offsets(node.children[i].child, i, MULTITHREADING_DEGREE/node.n);
-                }
-                meta.number_of_threads =  (MULTITHREADING_DEGREE/node.n) * node.n;
-            }
+            // if (node.n == meta.order)
+            // {
+            //     printf("RUNNING COMPUTE THREAD MAXX! OFFSETS\n");
+            //     compute_thread_offsets_max();
+            // }
+            // else
+            // {
+            //     printf("RUNNING COMPUTE THREAD OFFSETS\n");
+
+            //     for (size_t i = 0; i < node.n; i++)
+            //     {
+            //         compute_thread_offsets(node.children[i].child, i, MULTITHREADING_DEGREE/node.n);
+            //     }
+            //     meta.number_of_threads =  (MULTITHREADING_DEGREE/node.n) * node.n;
+            // }
         }
         //------------------------------------------------
     }
@@ -771,8 +782,84 @@ off_t bplus_tree::search_leaf(off_t index, const key_t &key) const
             meta.thread_offsets[i]=temp.children[0].child;
         }
 		meta.number_of_threads = number_of_threads;
+	
+    }
+    void bplus_tree::compute_thread_offsets_level_order(internal_node_t root,int value ) {
 
-		
+        // printf("Computing level order offsets for value %d \n ",value);
+
+        // Using level order traversal to find the level which has atleast number_of_threads nodes
+        std::queue<std::pair<internal_node_t,off_t>> q;
+        internal_node_t root_node;
+        map(&root_node,meta.root_offset);
+        q.push({root_node, 0});
+        int lvl = 0;
+        while(q.size()>0){
+            lvl++;
+            int len = q.size();
+            if(len>=MULTITHREADING_DEGREE){
+                break;
+            }
+            while(len--){
+                std::pair<internal_node_t,off_t> p = q.front();
+                internal_node_t node = p.first;
+                q.pop();
+                for(int i=0;i<node.n;i++){
+                    internal_node_t child;
+                    map(&child, node.children[i].child);
+                    if(child.n>0){
+                        q.push({child,node.children[i].child});
+                    }
+                }
+            }
+        }
+        int thread_offset_index=0 ;
+        int skip = q.size()/MULTITHREADING_DEGREE;
+        int cur = 0;
+    
+        meta.number_of_threads = MULTITHREADING_DEGREE;
+        int number_of_threads = MULTITHREADING_DEGREE;
+        std::vector<off_t> nodeOffsets;
+        while(q.size()>0){
+            std::pair<internal_node_t,off_t> p = q.front();
+            internal_node_t node = p.first;
+            q.pop();
+
+
+            if(number_of_threads==0)break;
+            if(cur==0){
+                // printf("%d ",p.second);
+                nodeOffsets.push_back(p.second);
+                cur = skip;
+                number_of_threads--;
+            }
+            else{
+                cur--;
+            }
+        }
+        // puts("");
+        int curlvl = lvl;
+        // std::cout<<lvl<<" "<<nodeOffsets.size()<<" "<<value<<std::endl;
+        // for(int el : nodeOffsets){
+        //     std::cout<<el<<" ";
+        // }
+        // std::cout<<nodeOffsets.size()<<std::endl;
+        meta.number_of_threads = nodeOffsets.size();
+        for(int i=0;i<nodeOffsets.size();i++){
+            // printf("%d ",nodeOffsets[i]);
+            internal_node_t node ;
+            map(&node, nodeOffsets[i]);
+            while(meta.height > curlvl){
+                map(&node, node.children[0].child);
+                curlvl++;
+            }
+            leaf_node_t leaf;
+            map(&leaf, node.children[0].child);
+            // printf("%d ",leaf.children[0].value);
+            meta.thread_offsets[i]=node.children[0].child;
+            curlvl = lvl;
+        }
+        // puts("");
     }
 
     void bplus_tree::compute_thread_offsets(off_t node_offset, int child_number, int number_of_threads )
@@ -804,6 +891,7 @@ off_t bplus_tree::search_leaf(off_t index, const key_t &key) const
                 map(&temp, temp.children[0].child);
                 --height;
             }
+            // printf("%d\n",temp.children[0].child);
             meta.thread_offsets[thread_offset_index]=temp.children[0].child;
             thread_offset_index++;
         }
