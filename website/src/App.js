@@ -4,9 +4,9 @@ import './App.css';
 import {io} from 'socket.io-client';
 import portNo from "./serverport"
 function App() {
-  let ws;
+  let [ws,setWs]= useState(null);
   let [count,setCount] = useState(0);
- 
+  let [status,setStatus] = useState("");
     // ws.onopen = (event) => {
     //   ws.send(JSON.stringify("Hi there"));
     // };
@@ -15,41 +15,53 @@ function App() {
       // get the port number from ../serverport
       let port = await (await fetch(portNo)).text()
       console.log(port)
-      ws = new WebSocket(`ws://localhost:${port}/ws`);
-
+      setWs(new WebSocket(`ws://localhost:${port}/ws`))
+      
+    }
+    useEffect(()=>{
+      if(ws)
       ws.onmessage = function (event) {
         console.log('Message from server ', event.data);
         setCount(event.data);
-        setTimeout(()=>{
-          ws.send("Start");
-        }, 200);
-        
       };
-
-  }
-  useEffect(() => {
+    },[ws])
+    useEffect(() => {
       init();
-  }, []);
+    }, []);
 
-  function sendData(text)
-  {
-    console.log("sending. . . ")
-      if(ws && ws.readyState)
+    useEffect(()=>{
+
+      if(status=="start"){
+        sendData("start")
+        setStatus("ping");
+      }
+      else if(status=="ping"){
+        setInterval(()=>{
+          sendData("ping");
+          }, 2);
+      }
+      else if(status=="kill"){
+        sendData("kill")
+      }
+    },[status])
+
+  function sendData(text){
+      if(ws )
       {
           ws.send(text);
       }
       else
       {
-        console.log("trying to send ")
-          setTimeout(sendData, 1000);
+        console.log("trying to send ",text)
+          setTimeout(()=>sendData(text), 1000);
       }
   }
 
   const handleOnCLickVisualize = ()=>{
-    sendData("Start");
+    setStatus("start");
   }
   const handleOnClickStop = () =>{
-    sendData("kill")
+    setStatus("kill")
   }
   
   return (

@@ -87,11 +87,14 @@ int main(){
       })
       .onmessage([&](crow::websocket::connection& /*conn*/, const std::string& data, bool is_binary) {
           std::lock_guard<std::mutex> _(mtx);
+          if(data=="start"){
           std::cout<<data<<std::endl;
-          if(data=="Start"){
-                if(message2.count==0){
-                    init(&count);
-                }
+                message2.count = 0;
+                count = 0;
+                init(&count);
+            
+          }
+          else if(data=="ping"){
                 if(message2.count<=10*50000){
                     msgrcv(msgid2, &message2, sizeof(message2), 0, 0);
                     // printf("Sending %d\n", message2.count);
@@ -111,5 +114,6 @@ int main(){
     std::string port;
     getline(MyFile,port);
     int port_num = stoi(port);
+    printf("Running on port %d\n", port_num);
     app.port(port_num).multithreaded().run();
 }
