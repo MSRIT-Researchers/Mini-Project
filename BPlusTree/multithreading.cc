@@ -23,7 +23,7 @@
     MultiThreadingBPT::MultiThreadingBPT() {
         bpt::bplus_tree database(DB_NAME); 
         bpt::meta_t meta = database.get_meta();
-        std::cout<<database.get_meta().leaf_node_num<<std::endl;
+        // std::cout<<database.get_meta().leaf_node_num<<std::endl;
         int number_of_threads = meta.number_of_threads;
         // set the last offset as zero
         meta.thread_offsets[number_of_threads] = 0;
@@ -37,7 +37,7 @@
 
     }
 
-    void MultiThreadingBPT::sendDataToMessageQ(int sum, int count){
+    void MultiThreadingBPT::sendDataToMessageQ(long long sum, long long count){
         mesg_buffer message;
         message.count = count;
         message.sum = sum;
@@ -172,7 +172,7 @@
         // 93300 + 559836 + 346806
 
         printf("Done Processing Thread: %d with count %ld\n", thread_number, count);
-        // sendDataToMessageQ(sum, c);
+        sendDataToMessageQ(sum, c);
     }
 
     // void multithread_aggregate_last(const int thread_number, off_t start_leaf_offset)
