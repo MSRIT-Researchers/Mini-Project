@@ -1,0 +1,24 @@
+{
+  "autorun": true,
+  "terminals": [
+    {
+      "name": "Server",
+      "description": "Server ",
+      "focus": true,
+      "commands": [
+        "cd BPlusTree",
+        "make server && ./server"
+      ]
+    },
+    {
+      "name": "website",
+      "description": "website",
+      "focus": false,
+      "commands": [
+        "cd website",
+        "npm start"
+      ]
+    },
+
+  ]
+}
