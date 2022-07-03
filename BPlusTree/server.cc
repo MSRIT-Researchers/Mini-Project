@@ -10,7 +10,7 @@
 #include <sys/wait.h>
 #include <fstream>
 
-int limit = 10*7000;
+int limit = 10*6000;
 
 void listenToStream(){
         key_t key = ftok("random", 65);
@@ -51,8 +51,8 @@ void init(){
 
 // int main(){
 
-//         // MultiThreadingBPT mtbpt = MultiThreadingBPT();
-//         init();
+        // MultiThreadingBPT mtbpt = MultiThreadingBPT();
+        // init();
 // }
 int main(){
     
