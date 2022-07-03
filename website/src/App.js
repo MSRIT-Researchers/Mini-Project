@@ -4,67 +4,25 @@ import playicon from './play_icon.png';
 import { io } from 'socket.io-client';
 import portNo from "./serverport"
 //import * as Highcharts from "highcharts";
-import Highcharts from 'highcharts/highstock';
+import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 
 function App() {
 
-  const options = {
+  const [data, setData] = useState([]);
+  const [options, setOptions] = useState({
     title: {
-      text: 'My stock chart'
+      text: 'My chart'
     },
-    series: [
-      {
-        data: [1, 2, 1, 4, 3, 6, 7, 3, 8, 6, 9]
-      }
-    ]
-  };
-
+    series: [{
+      data: data
+    }]
+  });
 
   let [ws, setWs] = useState(null);
   let [count, setCount] = useState(0);
-  //HERE
-  /*let [chartCount, setChartCount] = useState(
-    Highcharts.chart('progressive-visualization', {
-      chart: {
-        type: 'solidgauge'
-      },
-
-      title: null,
-
-      yAxis: {
-        min: 0,
-        max: 200,
-        title: {
-          text: 'Count'
-        }
-      },
-
-      credits: {
-        enabled: false
-      },
-
-      series: [{
-        name: 'Records count',
-        data: [0],
-        dataLabels: {
-          format:
-            '<div style="text-align:center">' +
-            '<span style="font-size:25px">{y}</span><br/>' +
-            '<span style="font-size:12px;opacity:0.4">records</span>' +
-            '</div>'
-        },
-        tooltip: {
-          valueSuffix: ' records'
-        }
-      }]
-
-    })
-  );*/
+  
   let [status, setStatus] = useState("");
-  // ws.onopen = (event) => {
-  //   ws.send(JSON.stringify("Hi there"));
-  // };
 
   async function init() {
     // get the port number from ../serverport
@@ -78,42 +36,7 @@ function App() {
       ws.onmessage = function (event) {
         console.log('Message from server ', event.data);
         setCount(event.data);
-        //HERE
-        /*setChartCount(Highcharts.chart('progressive-visualization', {
-          chart: {
-            type: 'solidgauge'
-          },
-
-          title: null,
-
-          yAxis: {
-            min: 0,
-            max: 200,
-            title: {
-              text: 'Count'
-            }
-          },
-
-          credits: {
-            enabled: false
-          },
-
-          series: [{
-            name: 'Records count',
-            data: [event.data],
-            dataLabels: {
-              format:
-                '<div style="text-align:center">' +
-                '<span style="font-size:25px">{y}</span><br/>' +
-                '<span style="font-size:12px;opacity:0.4">records</span>' +
-                '</div>'
-            },
-            tooltip: {
-              valueSuffix: ' records'
-            }
-          }]
-
-        }));*/
+       
       };
   }, [ws])
   useEffect(() => {
@@ -153,67 +76,31 @@ function App() {
     setStatus("kill")
   }
 
-
-  var chartCount = Highcharts.chart('progressive-visualization', {
-
-    yAxis: {
-      min: 0,
-      max: 200,
-      title: {
-        text: 'Count'
-      }
-    },
-
-    credits: {
-      enabled: false
-    },
-
-    series: [{
-      name: 'Records count',
-      data: [80],
-      dataLabels: {
-        format:
-          '<div style="text-align:center">' +
-          '<span style="font-size:25px">{y}</span><br/>' +
-          '<span style="font-size:12px;opacity:0.4">records</span>' +
-          '</div>'
-      },
-      tooltip: {
-        valueSuffix: ' records'
-      }
-    }]
-
-  });
-
-
-  setInterval(function () {
-    var point,
-      newVal,
-      inc;
-
-
-    point = chartCount.series[0].points[0];
-    inc = Math.round((Math.random() - 0.5) * 100);
-    newVal = point.y + inc;
-
-    if (newVal < 0 || newVal > 200) {
-      newVal = point.y - inc;
+  const handleUpdateGraph = ()=>{
+    for(let i=0; i<10; ++i){
+        let prevData = data;
+        prevData.push(i);
+        setData([prevData]);
     }
-
-    point.update(newVal);
-
-  }, 2000);
+    // console.log(data);
+    setOptions((prevState)=>{
+      let updatedOptions = Object.assign({},options);
+      updatedOptions.series[0].data = data;
+      return updatedOptions; 
+    })
+    // console.log(options);
+  }
 
   return (
     <div className="App">
       <header className="App-header">
         <button onClick={handleOnCLickVisualize} style={{ top: '35%' }}><img src={playicon} alt="play"></img></button>
         <button onClick={handleOnClickStop} style={{ top: '60%' }}>Stop</button>
+        <button onClick={handleUpdateGraph}> Update Graph</button>
         <div style={{ display: 'flex', flexDirection: 'row', height: '100vh', width: "100%" }}>
           <div className="Column" style={{ borderRight: "1px solid #95afc0" }}>
             <HighchartsReact
               highcharts={Highcharts}
-              constructorType={'stockChart'}
               options={options}
             />
           </div>
