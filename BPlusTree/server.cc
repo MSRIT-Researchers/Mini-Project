@@ -100,10 +100,14 @@ int main(){
                     // printf("Sending %d\n", message2.count);
                     current->send_text(std::to_string(message2.count));                
                 }
+                else{
+                    current->send_text("end");                
+    
+                }
           }
           else if(data=="kill"){
               app.stop();
-              wait(NULL);
+              while(wait(NULL)>0);
               msgctl(msgid2, IPC_RMID, NULL);
 
           }

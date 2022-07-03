@@ -4,13 +4,13 @@ import './App.css';
 import {io} from 'socket.io-client';
 import portNo from "./serverport"
 function App() {
-  let [ws,setWs]= useState(null);
-  let [count,setCount] = useState(0);
-  let [status,setStatus] = useState("");
-    // ws.onopen = (event) => {
-    //   ws.send(JSON.stringify("Hi there"));
-    // };
-    
+    let [ws,setWs]= useState(null);
+    let [count,setCount] = useState(0);
+    let [status,setStatus] = useState("");
+      // ws.onopen = (event) => {
+      //   ws.send(JSON.stringify("Hi there"));
+      // };
+    let [pingingIntervalId,setPingingIntervalId] = useState(null);
     async function init(){
       // get the port number from ../serverport
       let port = await (await fetch(portNo)).text()
@@ -22,6 +22,10 @@ function App() {
       if(ws)
       ws.onmessage = function (event) {
         console.log('Message from server ', event.data);
+        if(event.data==="end"){
+          setStatus("end");
+        }
+        else
         setCount(event.data);
       };
     },[ws])
@@ -36,9 +40,16 @@ function App() {
         setStatus("ping");
       }
       else if(status=="ping"){
-        setInterval(()=>{
+       let id =  setInterval(()=>{
           sendData("ping");
-          }, 2);
+          }, 3);
+        setPingingIntervalId(id);
+      }
+      else if(status=="end"){
+        console.log("Ending pinging ")
+        if(pingingIntervalId)
+          clearInterval(pingingIntervalId)
+        
       }
       else if(status=="kill"){
         sendData("kill")
