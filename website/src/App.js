@@ -22,7 +22,7 @@ function App() {
         setCount(event.data);
         setTimeout(()=>{
           ws.send("Start");
-        }, 1000);
+        }, 200);
         
       };
 

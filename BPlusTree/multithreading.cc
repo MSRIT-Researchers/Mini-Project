@@ -135,7 +135,7 @@
         
         printf(UNDERLINE "\nSingle Process\n\n" CLOSEUNDERLINE);
         multithread_aggregate(0, meta.thread_offsets[0], 0);
-        // printf("Sum : %lld ,Count : %lld \n", threadResults[0].first,threadResults[0].second);
+        printf("Sum : %lld ,Count : %lld \n", threadResults[0].first,threadResults[0].second);
         
         end = timeSinceEpochMillisec();
 
