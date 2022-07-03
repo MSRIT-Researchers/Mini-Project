@@ -157,7 +157,6 @@
                 c++;
             }
             if(c>=1000){
-                sleep(1);
                 sendDataToMessageQ(sum, c);
                 c=0;
                 sum=0;

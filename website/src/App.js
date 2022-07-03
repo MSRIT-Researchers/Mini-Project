@@ -6,29 +6,24 @@ import portNo from "./serverport"
 function App() {
   let ws;
   let [count,setCount] = useState(0);
-
  
     // ws.onopen = (event) => {
     //   ws.send(JSON.stringify("Hi there"));
     // };
     
     async function init(){
-      
-
       // get the port number from ../serverport
       let port = await (await fetch(portNo)).text()
       console.log(port)
       ws = new WebSocket(`ws://localhost:${port}/ws`);
+
       ws.onmessage = function (event) {
-  
-        try {
-                console.log(event.data);
-            setCount(Number(event.data))
-          } catch (err) {
-            console.log(err);
-          } 
-        };
-    }
+        console.log('Message from server ', event.data);
+        setCount(event.data);
+        ws.send("Start");
+      };
+
+  }
   useEffect(() => {
       init();
   }, []);

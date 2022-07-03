@@ -10,34 +10,34 @@
 #include <sys/wait.h>
 #include <fstream>
 
-//#include "variables.h"
-void init(){
-    pid_t pid = fork();
-    if(pid==0){
-        MultiThreadingBPT mtbpt = MultiThreadingBPT();
-        exit(0);
-    }
-}
-
-void listenToStream(crow::websocket::connection* user){
+void listenToStream(long long* count){
       key_t key;
         int msgid;
         key = ftok("random", 65);
         msgid = msgget(key, 0666 | IPC_CREAT);
         struct mesg_buffer message;
         int totalCount=0;
-        int c= 10;
-        while(totalCount<10*50000 && c--){
-            // usleep(200*1000);
+        while(totalCount<10*50000){
             msgrcv(msgid, &message, sizeof(message), 0, 0);
-            // printf("got sum: %lld, got count %lld\n", message.sum, message.count);
             printf("Processed %d records\n", totalCount);
-            // std::string str = "Processed"+std::to_string(totalCount)+" records\n";
-            user->send_text(std::to_string(totalCount));
-
             totalCount+=message.count;
+            *count = totalCount;
         }
         msgctl(msgid, IPC_RMID, NULL);
+}
+
+void init(long long *count){
+    pid_t pid = fork();
+    if(pid==0){
+        MultiThreadingBPT mtbpt = MultiThreadingBPT();
+        exit(0);
+    }
+    pid =  fork();
+    if(pid==0){
+        listenToStream(count);
+        exit(0);
+    }
+    return;
 }
 
 int main(){
@@ -54,6 +54,7 @@ int main(){
     std::unordered_set<crow::websocket::connection*> users;
     crow::websocket::connection* current;
     long long i = 1;
+    long long count =0;
     // Websoket server
     CROW_WEBSOCKET_ROUTE(app, "/ws")
       .onopen([&](crow::websocket::connection& conn) {
@@ -61,7 +62,8 @@ int main(){
           std::lock_guard<std::mutex> _(mtx);
           users.insert(&conn);
           current = &conn;
-          i=1;
+          count=0;
+          i=0;
 
       })
       .onclose([&](crow::websocket::connection& conn, const std::string& reason) {
@@ -73,11 +75,13 @@ int main(){
           std::lock_guard<std::mutex> _(mtx);
           std::cout<<data<<std::endl;
           if(data=="Start"){
-            // for(;i<=10;i++){
-                if(i<10000){
+                // if(count==0){
+                //     init(&count);
+                // }
+                if(i<=10000){
                     printf("Sending %lld\n", i);
-                    current->send_text(std::to_string(i));                    
-                    i++;
+                    current->send_text(std::to_string(i));    
+                    i++;                
                 }
           }
           else if(data=="kill"){
