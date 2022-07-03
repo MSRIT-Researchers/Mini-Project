@@ -647,7 +647,6 @@ int bplus_tree::search(const key_t& key, value_t *value) const
         // printf("MSRIT Researchers\n");
         if (node.parent == 0 && meta.height>HEIGHT_CUTOFF_FOR_MULTITHREADING) //if node is the root
         {
-           
             if (node.n == meta.order)
             {
                 printf("RUNNING COMPUTE THREAD MAXX! OFFSETS\n");
@@ -655,7 +654,6 @@ int bplus_tree::search(const key_t& key, value_t *value) const
             }
             else
             {
-        
                 printf("RUNNING COMPUTE THREAD OFFSETS\n");
 
                 for (size_t i = 0; i < node.n; i++)
@@ -761,7 +759,7 @@ off_t bplus_tree::search_leaf(off_t index, const key_t &key) const
         map(&node, meta.root_offset);
 
         int increment = 1;    
-    
+
         for(int i=0;i<BP_ORDER;i+=increment){
             map(&temp, node.children[i].child) ;
             int height = meta.height;
@@ -789,10 +787,17 @@ off_t bplus_tree::search_leaf(off_t index, const key_t &key) const
         map(&node, node_offset);
 
         int increment = node.n / number_of_threads;
+        /*
+            node.n = 7
+            numthreads = 3
+            inc = 2
 
+            0 2 4 6 
+            3 2 1 
+        */
         int thread_offset_index = child_number*number_of_threads;
 
-        for(size_t i=0;i<node.n;i+=increment){
+        for(size_t i=0;number_of_threads>0;i+=increment,number_of_threads--){
             map(&temp, node.children[i].child) ;
             int height = meta.height;
             while (height > 3) {
