@@ -10,7 +10,7 @@
 #include <sys/wait.h>
 #include <fstream>
 
-int limit = 10*6000;
+int limit = 10*10000;
 
 void listenToStream(){
         key_t key = ftok("random", 65);
@@ -19,17 +19,20 @@ void listenToStream(){
         int msgid2 = msgget(key2, 0666 | IPC_CREAT);
         struct mesg_buffer message, message2;
         int totalCount=0;
+        long long sum = 0;
+
         while(totalCount<limit){
             msgrcv(msgid, &message, sizeof(message), 0, 0);
             // printf("Processed %d records\n", totalCount);
             totalCount+=message.count;
+            sum+=message.sum; 
             message2.count = totalCount;
             message2.sum = 1;
             // printf("sending message2.count %lld\n", message2.count);
             msgsnd(msgid2, &message2, sizeof(message2), 0);     
         }
 
-        printf("totalCount %d\n", totalCount);
+        printf("totalCount %d totalSum %lld \n", totalCount, sum);
         msgctl(msgid, IPC_RMID, NULL);
 }
 
@@ -42,6 +45,9 @@ void init(){
     // listenToStream();
     pid = fork();
     if(pid==0){
+        key_t key = ftok("random", 65);
+        int msgid = msgget(key, 0666 | IPC_CREAT);
+        msgctl(msgid, IPC_RMID, NULL);
         listenToStream();
         exit(0);
     }
@@ -50,9 +56,8 @@ void init(){
 }
 
 // int main(){
-
-        // MultiThreadingBPT mtbpt = MultiThreadingBPT();
-        // init();
+//     init();
+//     while(wait(NULL)>0);
 // }
 int main(){
     
