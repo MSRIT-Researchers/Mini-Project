@@ -156,15 +156,15 @@
         bpt::bplus_tree database(DB_NAME);
         bpt::leaf_node_t temp;
         database.run_map(&temp, start_leaf_offset);
-        do{
+        int first = -1;
+        while(temp.next != end_leaf_offset){
             // printf("%d\n",temp.next);
             // if(temp.n==0)break;
             for (size_t i = 0; i < temp.n; ++i){
+                if(first==-1)first = temp.children[i].value;
                 sum += temp.children[i].value;
-                if(temp.children[i].value > 0){
-                    count++;
+                count++;
                 c++;
-                }
             }
             if(c>=1000){
                 sendDataToMessageQ(sum, c);
@@ -176,17 +176,17 @@
                 break;
             }
             database.run_map(&temp, temp.next);
-        }while(temp.next != end_leaf_offset);
-            
+        }
+            int last = 0;
             for (size_t i = 0; i < temp.n; ++i){
                 sum += temp.children[i].value;
-                if(temp.children[i].value > 0){
-                    count++;
+                count++;
                 c++;
-                }
+                last = temp.children[i].value;
+                
             }
 
-        printf("Done Processing Thread: %d with count %ld\n", thread_number, count);
+        printf("Done Processing Thread: %d with count %ld \n", thread_number, count);
     }
 
     // void multithread_aggregate_last(const int thread_number, off_t start_leaf_offset)
