@@ -786,7 +786,6 @@ off_t bplus_tree::search_leaf(off_t index, const key_t &key) const
     }
     void bplus_tree::compute_thread_offsets_level_order(internal_node_t root,int value ) {
 
-        // printf("Computing level order offsets for value %d \n ",value);
 
         // Using level order traversal to find the level which has atleast number_of_threads nodes
         std::queue<std::pair<internal_node_t,off_t>> q;
@@ -813,13 +812,12 @@ off_t bplus_tree::search_leaf(off_t index, const key_t &key) const
                 }
             }
         }
-        int thread_offset_index=0 ;
-        int skip = q.size()/MULTITHREADING_DEGREE;
+
+        int skipBy = q.size()/MULTITHREADING_DEGREE;
         int cur = 0;
-    
-        meta.number_of_threads = MULTITHREADING_DEGREE;
         int number_of_threads = MULTITHREADING_DEGREE;
-        std::vector<off_t> nodeOffsets;
+        std::vector<off_t> internalNodeOffsets;
+
         while(q.size()>0){
             std::pair<internal_node_t,off_t> p = q.front();
             internal_node_t node = p.first;
@@ -829,37 +827,29 @@ off_t bplus_tree::search_leaf(off_t index, const key_t &key) const
             if(number_of_threads==0)break;
             if(cur==0){
                 // printf("%d ",p.second);
-                nodeOffsets.push_back(p.second);
-                cur = skip;
+                internalNodeOffsets.push_back(p.second);
+                cur = skipBy;
                 number_of_threads--;
             }
             else{
                 cur--;
             }
         }
-        // puts("");
+
         int curlvl = lvl;
-        // std::cout<<lvl<<" "<<nodeOffsets.size()<<" "<<value<<std::endl;
-        // for(int el : nodeOffsets){
-        //     std::cout<<el<<" ";
-        // }
-        // std::cout<<nodeOffsets.size()<<std::endl;
-        meta.number_of_threads = nodeOffsets.size();
-        for(int i=0;i<nodeOffsets.size();i++){
-            // printf("%d ",nodeOffsets[i]);
+        meta.number_of_threads = internalNodeOffsets.size();
+        for(int i=0;i<internalNodeOffsets.size();i++){
             internal_node_t node ;
-            map(&node, nodeOffsets[i]);
+            map(&node, internalNodeOffsets[i]);
             while(meta.height > curlvl){
                 map(&node, node.children[0].child);
                 curlvl++;
             }
-            leaf_node_t leaf;
-            map(&leaf, node.children[0].child);
-            // printf("%d ",leaf.children[0].value);
+            leaf_node_t leafNode;
+            map(&leafNode, node.children[0].child);
             meta.thread_offsets[i]=node.children[0].child;
             curlvl = lvl;
         }
-        // puts("");
     }
 
     void bplus_tree::compute_thread_offsets(off_t node_offset, int child_number, int number_of_threads )
