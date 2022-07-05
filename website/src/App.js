@@ -4,17 +4,17 @@ import playicon from './play_icon.png';
 import ritlogo from './rit_logo.png';
 
 import { io } from 'socket.io-client';
-import portNo from "./serverport"
+import portNo from "./serverport" 
 //import * as Highcharts from "highcharts";
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import highchartsMore from "highcharts/highcharts-more";
 import solidGauge from "highcharts/modules/solid-gauge";
 import Modal from 'react-modal';
-
+ 
 function App() {
   const [data, setData] = useState([0]);
-  const [modalIsOpen, setIsOpen] = useState(false);
+  const [modalIsOpen, setIsOpen] = useState(false); 
   const [options, setOptions] = useState({  
     chart: {
       type: 'solidgauge'
@@ -188,7 +188,7 @@ function App() {
           isOpen={modalIsOpen}
           onRequestClose={closeModal}
           contentLabel="Example Modal"
-        >
+        >  
           <p>What is this project about?<br></br>This is a research-based project where we work on unique algorithms to give the best possible experience to the end user while exploring huge databases: both in terms of <em>speed</em> and <em>interactivity</em>. On the left is our new tech; on the right is the traditional mechanism</p>
           <p>How are we doing this?<br></br>This project uniquely combines parallel iterative processing with progressive visualization to find out how the querying process can be enhanced. The backend is where much of the magic happens: our uniquely designed algorithms, with custom data structures coded from scratch.</p>
           <p style={{ color: "#636E72" }}>Made by Sahil, Aakash, Soundarya and Subinoy</p>
@@ -196,6 +196,6 @@ function App() {
       </header >
     </div >
   );
-}
+} 
 
 export default App;

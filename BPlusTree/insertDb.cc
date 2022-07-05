@@ -15,7 +15,9 @@ int main(void){
         char str[tempKey.length()];
         strcpy(str, tempKey.c_str());
         bpt::key_t key(str);
-        
+        if(i%10000==0){
+            printf("%lld records inserted\n", i);
+        }
         database.insert(key, rand());
     }   
 
