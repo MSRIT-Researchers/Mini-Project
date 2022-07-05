@@ -8,17 +8,33 @@ import portNo from "./serverport"
 //import * as Highcharts from "highcharts";
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
+import highchartsMore from "highcharts/highcharts-more";
+import solidGauge from "highcharts/modules/solid-gauge";
 import Modal from 'react-modal';
 
 function App() {
 
   const [data, setData] = useState([]);
   const [options, setOptions] = useState({
-    /*chart: {
+    chart: {
       type: 'solidgauge'
-    },*/
+    },
     title: {
       text: 'Average'
+    },
+
+    pane: {
+      center: ['50%', '85%'],
+      size: '140%',
+      startAngle: -90,
+      endAngle: 90,
+      background: {
+        backgroundColor:
+          '#1E1F24',
+        innerRadius: '60%',
+        outerRadius: '100%',
+        shape: 'arc'
+      }
     },
     series: [{
       data: data
@@ -47,7 +63,10 @@ function App() {
         handleUpdateGraph();
       };
   }, [ws])
+
   useEffect(() => {
+    highchartsMore(Highcharts);
+    solidGauge(Highcharts);
     init();
   }, []);
 
