@@ -104,8 +104,15 @@ int main(){
           }
           else if(data=="ping"){
                 if(message2.count<limit){
-                    msgrcv(msgid2, &message2, sizeof(message2), 0, 0);
-                    // printf("Sending %d\n", message2.count);
+                    struct msqid_ds mesg_stat;
+                    msgctl(msgid2,IPC_STAT,&mesg_stat);
+                    printf("Size: %d\n", mesg_stat.msg_qnum);
+                    int iter = mesg_stat.msg_qnum;
+                    while(iter>1){
+                        msgrcv(msgid2, &message2, sizeof(message2), 0, 0);
+                        iter--;
+                    }
+                    msgrcv(msgid2, &message2, sizeof(message2), 0,0);
                     current->send_text(std::to_string(message2.count));                
                 }
                 else{
