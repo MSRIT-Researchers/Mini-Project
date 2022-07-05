@@ -1,5 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap');
+
 .App {
   text-align: center;
+  font-family: 'Quicksand', cursive;
 }
 
 .App-logo {
@@ -14,7 +17,7 @@
 }
 
 .App-header {
-  background-color: #282c34;
+  /*background-color: #282c34;*/
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -24,15 +27,67 @@
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+#rit-logo {
+  position: absolute;
+  top: 10px;
+  right: 10px;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+p {
+  font-size: medium;
+  font-weight: 400;
+}
+
+.Column {
+  flex: 1;
+  flex-direction: column;
+  background-color: #1E1F24;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.visualization-box {
+  height: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+button {
+  height: 100px;
+  width: 100px;
+  border-radius: 100px;
+  position: absolute;
+  background-color: #BEE7BB;
+  font-family: 'Quicksand';
+  font-weight: 600;
+}
+
+#info-button {
+  height: 50px;
+  width: 50px;
+  border-radius: 50px;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: #81ecec;
+}
+
+img {
+  width: 40px;
+}
+
+#credits {
+  position: absolute;
+  bottom: 10px;
+  border-radius: 6px;
+  padding: 2px;
+  background-color: #636E72;
+  font-size: small;
+}
+
+#modal {
+  background-color: #636E72;
 }
