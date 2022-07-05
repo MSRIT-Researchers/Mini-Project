@@ -27,7 +27,7 @@ void listenToStream(){
             totalCount+=message.count;
             sum+=message.sum; 
             message2.count = totalCount;
-            message2.sum = 1;
+            message2.sum = sum/totalCount;
             // printf("sending message2.count %lld\n", message2.count);
             msgsnd(msgid2, &message2, sizeof(message2), 0);     
         }
@@ -113,7 +113,7 @@ int main(){
                         iter--;
                     }
                     msgrcv(msgid2, &message2, sizeof(message2), 0,0);
-                    current->send_text(std::to_string(message2.count));                
+                    current->send_text(std::to_string(message2.sum));                
                 }
                 else{
                     current->send_text("end");                

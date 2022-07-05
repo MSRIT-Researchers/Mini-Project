@@ -16,7 +16,7 @@ int main(void){
         strcpy(str, tempKey.c_str());
         bpt::key_t key(str);
         
-        database.insert(key, i);
+        database.insert(key, rand());
     }   
 
 
