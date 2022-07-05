@@ -162,7 +162,7 @@ function App() {
       transform: 'translate(-50%, -50%)',
     },
   };
-
+   
   return (
     <div className="App">
       <header className="App-header">
@@ -183,9 +183,9 @@ function App() {
           </div>
         </div>
         <div id='credits' onClick={openModal}>Made with ❤ for mini-project 2022</div>
-        <Modal
+        <Modal  
           style={customStyles}
-          isOpen={modalIsOpen}
+          isOpen={modalIsOpen} 
           onRequestClose={closeModal}
           contentLabel="Example Modal"
         >  
@@ -193,9 +193,11 @@ function App() {
           <p>How are we doing this?<br></br>This project uniquely combines parallel iterative processing with progressive visualization to find out how the querying process can be enhanced. The backend is where much of the magic happens: our uniquely designed algorithms, with custom data structures coded from scratch.</p>
           <p style={{ color: "#636E72" }}>Made by Sahil, Aakash, Soundarya and Subinoy</p>
         </Modal>
-      </header >
-    </div >
-  );
-} 
+      </header > 
+        
+    </div > 
+  );    
+}    
 
-export default App;
+export default App;    
+  

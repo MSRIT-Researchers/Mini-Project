@@ -238,7 +238,7 @@ int bplus_tree::search(const key_t& key, value_t *value) const
         return 0;
     }
 
-    int bplus_tree::insert(const key_t &key, value_t value)
+    int bplus_tree::insert(const key_t &key, value_t value, bool lastValue)
     {
         off_t parent = search_index(key);
         off_t offset = search_leaf(parent, key);
@@ -292,8 +292,9 @@ int bplus_tree::search(const key_t& key, value_t *value) const
         internal_node_t parent_node;
         map(&parent_node, parent);
         
-        if( meta.height > HEIGHT_CUTOFF_FOR_MULTITHREADING )
+        if( lastValue == true &&  meta.height > HEIGHT_CUTOFF_FOR_MULTITHREADING ){
             compute_thread_offsets_level_order(parent_node,value);
+        }
 
         return 0;
     }

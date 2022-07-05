@@ -9,8 +9,8 @@ using namespace bpt;
 int main(void){
 
     bplus_tree database(DB_NAME);
-    
-    for(long long i=0; i<RANGE*THREAD_NUM; ++i){
+    long long len = RANGE*THREAD_NUM;
+    for(long long i=0; i<len; ++i){
         std::string tempKey = std::to_string(i);
         char str[tempKey.length()];
         strcpy(str, tempKey.c_str());
@@ -18,7 +18,13 @@ int main(void){
         if(i%10000==0){
             printf("%lld records inserted\n", i);
         }
-        database.insert(key, rand());
+        if(i<len-10){
+            database.insert(key, rand(),false);
+
+        }
+        else{
+            database.insert(key, rand(),true);
+        }
     }   
 
 

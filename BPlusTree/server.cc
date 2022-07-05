@@ -10,7 +10,7 @@
 #include <sys/wait.h>
 #include <fstream>
 
-int limit = 10*10000;
+int limit = 10*500000;
 
 void listenToStream(){
         key_t key = ftok("random", 65);
@@ -33,6 +33,15 @@ void listenToStream(){
         }
 
         printf("totalCount %d totalSum %lld \n", totalCount, sum);
+         struct msqid_ds mesg_stat;
+        msgctl(msgid,IPC_STAT,&mesg_stat);
+        printf("Size: %d\n", mesg_stat.msg_qnum);
+        int iter = mesg_stat.msg_qnum;
+        while(iter>0){
+            msgrcv(msgid, &message2, sizeof(message2), 0, 0);
+            iter--;
+        }
+
         msgctl(msgid, IPC_RMID, NULL);
 }
 

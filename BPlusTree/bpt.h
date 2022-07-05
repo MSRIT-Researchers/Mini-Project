@@ -89,7 +89,7 @@ public:
     int search_range(key_t *left, const key_t &right,
                      value_t *values, size_t max, bool *next = NULL) const;
     int remove(const key_t& key);
-    int insert(const key_t& key, value_t value);
+    int insert(const key_t& key, value_t value,bool lastValue=false);
     int update(const key_t& key, value_t value);
     
     template<class T>
