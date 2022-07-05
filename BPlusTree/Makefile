@@ -74,7 +74,7 @@ multithreading: $(MULTITHREADING)
 testdb: $(TESTDB)
 	$(QUIET_LINK)$(CXX) -o testdb $(CCOPT) $(DEBUG) $(TESTDB) $(CCLINK)
 
-server: server.cc multithreading.o
+server: server.cc multithreading.o variables.h
 	g++ server.cc multithreading.o bpt.o -o server -L /usr/lib/ -lboost_system -lboost_thread -lpthread
 
 run_insert :
@@ -87,6 +87,6 @@ bpt.o: bpt.cc bpt.h predefined.h
 cli.o: cli.cc bpt.h predefined.h
 dump_numbers.o: dump_numbers.cc bpt.h predefined.h
 unit_test.o: unit_test.cc bpt.h predefined.h
-insertDb.o: insertDb.cc 
-multithreading.o: multithreading.cc multithreading.h 
-testDb.o: testDb.cc 
+insertDb.o: insertDb.cc variables.h
+multithreading.o: multithreading.cc multithreading.h variables.h
+testDb.o: testDb.cc variables.h

@@ -8,7 +8,7 @@ class MultiThreadingBPT{
         std::pair<long long, long long> threadResults[100];
     public: 
         
-        void sendDataToMessageQ(int sum, int count);
+        void sendDataToMessageQ(long long sum, long long count);
         void listenToMessageQ();
         void multithread(int left, int right, const int threadNumber);
         void multithread_aggregate(const int thread_number, off_t start_leaf_offset, off_t end_leaf_offset = 0);

@@ -13,16 +13,19 @@ import solidGauge from "highcharts/modules/solid-gauge";
 import Modal from 'react-modal';
 
 function App() {
-
-  const [data, setData] = useState([]);
-  const [options, setOptions] = useState({
+  const [data, setData] = useState([0]);
+  const [modalIsOpen, setIsOpen] = useState(false);
+  const [options, setOptions] = useState({  
     chart: {
       type: 'solidgauge'
     },
     title: {
       text: 'Average'
     },
-
+    yAxis: {
+        min: 0,
+        max: 3000000000,
+    },
     pane: {
       center: ['50%', '85%'],
       size: '140%',
@@ -33,34 +36,50 @@ function App() {
           '#1E1F24',
         innerRadius: '60%',
         outerRadius: '100%',
-        shape: 'arc'
+        shape: 'arc' 
       }
-    },
+    },  
     series: [{
+      name: 'Avg Value',
       data: data
     }]
   });
+    let [ws,setWs]= useState(null);
+    let [count,setCount] = useState(0);
+    let [status,setStatus] = useState("");
+      // ws.onopen = (event) => {
+      //   ws.send(JSON.stringify("Hi there"));
+      // };
+    let [pingingIntervalId,setPingingIntervalId] = useState(null);
+    async function init(){
+      // get the port number from ../serverport
+      let port = await (await fetch(portNo)).text()
+      console.log(port)
+      setWs(new WebSocket(`ws://localhost:${port}/ws`))
+      
+    }
 
-  let [ws, setWs] = useState(null);
-  let [count, setCount] = useState(0);
+    useEffect(()=>{
+      console.log(data); 
+      setOptions((prevState) => {
+        let updatedOptions = Object.assign({}, options);
+        updatedOptions.series[0].data = data;
+        return updatedOptions;
+      }) 
+    },[data])
 
-  let [status, setStatus] = useState("");
-
-  const [modalIsOpen, setIsOpen] = useState(false);
-
-  async function init() {
-    // get the port number from ../serverport
-    let port = await (await fetch(portNo)).text()
-    console.log(port)
-    setWs(new WebSocket(`ws://localhost:${port}/ws`))
-
-  }
-  useEffect(() => {
-    if (ws)
+    useEffect(()=>{
+      if(ws)
       ws.onmessage = function (event) {
         console.log('Message from server ', event.data);
-        setCount(event.data);
-        handleUpdateGraph();
+        if(event.data==="end"){
+          setStatus("end");
+        }   
+        else{
+            setCount(event.data);
+            setData([parseInt(event.data)]);  
+        }
+       
       };
   }, [ws])
 
@@ -71,20 +90,26 @@ function App() {
   }, []);
 
   useEffect(() => {
-
-    if (status === "start") {
-      sendData("start")
-      setStatus("ping");
-    }
-    else if (status === "ping") {
-      setInterval(() => {
-        sendData("ping");
-      }, 2);
-    }
-    else if (status === "kill") {
-      sendData("kill")
-    }
-  }, [status])
+      if(status=="start"){
+        sendData("start")
+        setStatus("ping");
+      }
+      else if(status=="ping"){
+       let id =  setInterval(()=>{
+          sendData("ping");
+          }, 3);
+        setPingingIntervalId(id);
+      }
+      else if(status=="end"){
+        console.log("Ending pinging ")
+        if(pingingIntervalId)
+          clearInterval(pingingIntervalId)
+        
+      }
+      else if(status=="kill"){
+        sendData("kill")
+      }
+    },[status])
 
   function sendData(text) {
     if (ws) {
@@ -103,14 +128,14 @@ function App() {
     setStatus("kill")
   }
 
-  const handleUpdateGraph = () => {
+  const handleUpdateGraph = (c) => { 
     /*for (let i = 0; i < 10; ++i) {
       let prevData = data;
       prevData.push(i);
-      setData([prevData]);
+      setData([prevData]); 
     }*/
-    setData([count]);
-    // console.log(data);
+    setData([c]); 
+    console.log(data);
     setOptions((prevState) => {
       let updatedOptions = Object.assign({}, options);
       updatedOptions.series[0].data = data;

@@ -10,4 +10,4 @@ testdb
 server
 a.out
 parent.cc
-.vscode
+vscode/*log

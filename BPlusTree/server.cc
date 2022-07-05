@@ -10,6 +10,8 @@
 #include <sys/wait.h>
 #include <fstream>
 
+int limit = 10*10000;
+
 void listenToStream(){
         key_t key = ftok("random", 65);
         int msgid = msgget(key, 0666 | IPC_CREAT);
@@ -17,20 +19,24 @@ void listenToStream(){
         int msgid2 = msgget(key2, 0666 | IPC_CREAT);
         struct mesg_buffer message, message2;
         int totalCount=0;
-        while(totalCount<10*50000){
+        long long sum = 0;
+
+        while(totalCount<limit){
             msgrcv(msgid, &message, sizeof(message), 0, 0);
             // printf("Processed %d records\n", totalCount);
             totalCount+=message.count;
+            sum+=message.sum; 
             message2.count = totalCount;
-            message2.sum = 1;
+            message2.sum = sum/totalCount;
             // printf("sending message2.count %lld\n", message2.count);
             msgsnd(msgid2, &message2, sizeof(message2), 0);     
         }
-        printf("totalCount %d\n", totalCount);
+
+        printf("totalCount %d totalSum %lld \n", totalCount, sum);
         msgctl(msgid, IPC_RMID, NULL);
 }
 
-void init(int *count){
+void init(){
     pid_t pid = fork();
     if(pid==0){
         MultiThreadingBPT mtbpt = MultiThreadingBPT();
@@ -39,6 +45,9 @@ void init(int *count){
     // listenToStream();
     pid = fork();
     if(pid==0){
+        key_t key = ftok("random", 65);
+        int msgid = msgget(key, 0666 | IPC_CREAT);
+        msgctl(msgid, IPC_RMID, NULL);
         listenToStream();
         exit(0);
     }
@@ -46,6 +55,10 @@ void init(int *count){
     return;
 }
 
+// int main(){
+//     init();
+//     while(wait(NULL)>0);
+// }
 int main(){
     
     key_t key2 = ftok("server.cc", 64);
@@ -66,9 +79,7 @@ int main(){
     std::unordered_set<crow::websocket::connection*> users;
     crow::websocket::connection* current;
     long long i = 1;
-    int count =0;
 
-    // init(&count);
     // Websoket server
     CROW_WEBSOCKET_ROUTE(app, "/ws")
       .onopen([&](crow::websocket::connection& conn) {
@@ -76,7 +87,6 @@ int main(){
           std::lock_guard<std::mutex> _(mtx);
           users.insert(&conn);
           current = &conn;
-          count=0;
           i=0;
 
       })
@@ -88,22 +98,31 @@ int main(){
       .onmessage([&](crow::websocket::connection& /*conn*/, const std::string& data, bool is_binary) {
           std::lock_guard<std::mutex> _(mtx);
           if(data=="start"){
-          std::cout<<data<<std::endl;
+                std::cout<<data<<std::endl;
                 message2.count = 0;
-                count = 0;
-                init(&count);
-            
+                init();
           }
           else if(data=="ping"){
-                if(message2.count<=10*50000){
-                    msgrcv(msgid2, &message2, sizeof(message2), 0, 0);
-                    // printf("Sending %d\n", message2.count);
-                    current->send_text(std::to_string(message2.count));                
+                if(message2.count<limit){
+                    struct msqid_ds mesg_stat;
+                    msgctl(msgid2,IPC_STAT,&mesg_stat);
+                    printf("Size: %d\n", mesg_stat.msg_qnum);
+                    int iter = mesg_stat.msg_qnum;
+                    while(iter>1){
+                        msgrcv(msgid2, &message2, sizeof(message2), 0, 0);
+                        iter--;
+                    }
+                    msgrcv(msgid2, &message2, sizeof(message2), 0,0);
+                    current->send_text(std::to_string(message2.sum));                
+                }
+                else{
+                    current->send_text("end");                
+    
                 }
           }
           else if(data=="kill"){
               app.stop();
-              wait(NULL);
+              while(wait(NULL)>0);
               msgctl(msgid2, IPC_RMID, NULL);
 
           }
