@@ -45,10 +45,10 @@ void listenToStream(){
         msgctl(msgid, IPC_RMID, NULL);
 }
 
-void init(){
+void init(bool single=false){
     pid_t pid = fork();
     if(pid==0){
-        MultiThreadingBPT mtbpt = MultiThreadingBPT();
+        MultiThreadingBPT mtbpt = MultiThreadingBPT(single);
         exit(0);
     }
     // listenToStream();
@@ -65,7 +65,7 @@ void init(){
 }
 
 // int main(){
-//     init();
+//     init(true);
 //     while(wait(NULL)>0);
 // }
 int main(){

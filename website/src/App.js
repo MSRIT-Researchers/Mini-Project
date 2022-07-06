@@ -18,8 +18,9 @@ function App() {
   const [count, setCount] = useState(0);
   const [status, setStatus] = useState("");
   const [delay, setDelay] = useState(0);
-  const [data, setData] = useState([100000]);
+  const [data, setData] = useState([0]);
   const [modalIsOpen, setIsOpen] = useState(false);
+  const [runSingle, setRunSingle] = useState(false);
   const [options, setOptions] = useState({
     chart: {
       type: 'solidgauge',
@@ -34,7 +35,7 @@ function App() {
         [0.5, '#FFBFA4'],
         [0.5, '#F8EFBA']
       ],
-      min: 100000,
+      min: 0,
       max: 200000,
     },
     pane: {
@@ -98,8 +99,13 @@ function App() {
 
   useEffect(() => {
     if (status == "start") {
-      sendData("start")
-      setStatus("ping");
+      if(runSingle){
+        sendData("startSingle")
+      }
+      else{
+        sendData("start")
+        setStatus("ping");
+      }
     }
     else if (status == "ping") {
       let id = setInterval(() => {
@@ -133,6 +139,11 @@ function App() {
   }
 
   const handleOnCLickVisualize = () => {
+    setStatus("start");
+  }
+
+  const handleOnCLickVisualizeSingle = ()=>{
+    setRunSingle(true);
     setStatus("start");
   }
   const handleOnClickStop = () => {
@@ -176,7 +187,7 @@ function App() {
             <div className='column-title'>Traditional querying</div>
             <img src={loading} alt='loading' id='loading'/>
             <div className='visualization-box'>{count}<p>is the average computed</p></div>
-            <button onClick={handleOnCLickVisualize} style={{ top: '35%', color: "#96D391", fontSize: "30px" }}>▶</button>
+            <button onClick={handleOnCLickVisualizeSingle} style={{ top: '35%', color: "#96D391", fontSize: "30px" }}>▶</button>
           </div>
         </div>
         <div id='credits' onClick={openModal}>Made with ❤ for mini-project 2022</div>
