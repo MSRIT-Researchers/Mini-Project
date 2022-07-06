@@ -15,7 +15,7 @@ import Modal from 'react-modal';
 function App() {
   highchartsMore(Highcharts);
   solidGauge(Highcharts);
-  const [data, setData] = useState([1050000000]);
+  const [data, setData] = useState([100000]);
   const [modalIsOpen, setIsOpen] = useState(false);
   const [options, setOptions] = useState({
     chart: {
@@ -31,8 +31,8 @@ function App() {
         [0.5, '#FFBFA4'],
         [0.5, '#F8EFBA']
       ],
-      min: 1050000000,
-      max: 1100000000,
+      min: 100000,
+      max: 200000,
     },
     pane: {
       center: ['50%', '85%'],
@@ -89,8 +89,7 @@ function App() {
         }
         else {
           setCount(event.data);
-          setData([parseInt(event.data)]);
-          // let prevDelay = delay+1;
+          setData([parseFloat(event.data)]);
           setDelay(prevDelay => {
             return prevDelay + 1;
           });
@@ -120,6 +119,11 @@ function App() {
       console.log("Ending pinging ")
       if (pingingIntervalId)
         clearInterval(pingingIntervalId)
+      setOptions((prevState) => {
+          let updatedOptions = Object.assign({}, options);
+          updatedOptions.series[0].data = data;
+          return updatedOptions;
+        })
 
     }
     else if (status == "kill") {
