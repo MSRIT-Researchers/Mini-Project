@@ -14,6 +14,7 @@
 #include <sys/ipc.h>
 #include <sys/msg.h>
 #include "variables.h"
+#include <thread>
 
 #define UNDERLINE "\033[4m"
 #define CLOSEUNDERLINE "\033[0m"
@@ -167,6 +168,7 @@
                 c++;
             }
             if(c>=1000){
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 sendDataToMessageQ(sum, c);
                 c=0;
                 sum=0;
