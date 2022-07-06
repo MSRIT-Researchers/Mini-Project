@@ -140,7 +140,7 @@
         
         printf(UNDERLINE "\nSingle Process\n\n" CLOSEUNDERLINE);
         multithread_aggregate_single(0, meta.thread_offsets[0], 0);
-        printf("Sum : %lld ,Count : %lld \n", threadResults[0].first,threadResults[0].second);
+        // printf("Sum : %lld ,Count : %lld \n", threadResults[0].first,threadResults[0].second);
         
         end = timeSinceEpochMillisec();
 
@@ -197,7 +197,7 @@
                 c++;
             }
             if(c>=1000){
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                // std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 c=0;
             }
             if(temp.next == end_leaf_offset){
