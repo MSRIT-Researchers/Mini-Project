@@ -13,6 +13,11 @@ import Modal from 'react-modal';
 function App() {
   highchartsMore(Highcharts);
   solidGauge(Highcharts);
+  const [pingingIntervalId, setPingingIntervalId] = useState(null);
+  const [ws, setWs] = useState(null);
+  const [count, setCount] = useState(0);
+  const [status, setStatus] = useState("");
+  const [delay, setDelay] = useState(0);
   const [data, setData] = useState([100000]);
   const [modalIsOpen, setIsOpen] = useState(false);
   const [options, setOptions] = useState({
@@ -51,20 +56,17 @@ function App() {
       animation: false
     }]
   });
-  let [ws, setWs] = useState(null);
-  let [count, setCount] = useState(0);
-  let [status, setStatus] = useState("");
-  let [delay, setDelay] = useState(0);
-
-  let [pingingIntervalId, setPingingIntervalId] = useState(null);
+  
   async function init() {
-
     // get the port number from ../serverport
     let port = await (await fetch(portNo)).text()
     console.log(port)
     setWs(new WebSocket(`ws://localhost:${port}/ws`))
-
   }
+
+  useEffect(() => {
+    init();
+  }, []);
 
   useEffect(() => {
     if (delay === 100) {
@@ -75,7 +77,6 @@ function App() {
       })
       setDelay(0);
     }
-
   }, [delay]);
 
   useEffect(() => {
@@ -92,15 +93,8 @@ function App() {
             return prevDelay + 1;
           });
         }
-
-
       };
   }, [ws])
-
-  useEffect(() => {
-
-    init();
-  }, []);
 
   useEffect(() => {
     if (status == "start") {
@@ -122,14 +116,13 @@ function App() {
           updatedOptions.series[0].data = data;
           return updatedOptions;
         })
-
     }
     else if (status == "kill") {
       sendData("kill")
     }
   }, [status])
 
-  function sendData(text) {
+  const sendData = (text)=>{
     if (ws) {
       ws.send(text);
     }
@@ -146,27 +139,11 @@ function App() {
     setStatus("kill")
   }
 
-  const handleUpdateGraph = (c) => {
-    /*for (let i = 0; i < 10; ++i) {
-      let prevData = data;
-      prevData.push(i);
-      setData([prevData]); 
-    }*/
-    setData([c]);
-    console.log(data);
-    setOptions((prevState) => {
-      let updatedOptions = Object.assign({}, options);
-      updatedOptions.series[0].data = data;
-      return updatedOptions;
-    })
-    // console.log(options);
-  }
-
-  function openModal() {
+  const openModal = ()=>{
     setIsOpen(true);
   }
 
-  function closeModal() {
+  const closeModal = ()=>{
     setIsOpen(false);
   }
 
