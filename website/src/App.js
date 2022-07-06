@@ -13,6 +13,8 @@ import solidGauge from "highcharts/modules/solid-gauge";
 import Modal from 'react-modal';
  
 function App() {
+  highchartsMore(Highcharts);
+  solidGauge(Highcharts);
   const [data, setData] = useState([0]);
   const [modalIsOpen, setIsOpen] = useState(false); 
   const [options, setOptions] = useState({  
@@ -23,8 +25,8 @@ function App() {
       text: 'Average'
     },
     yAxis: {
-        min: 0,
-        max: 3000000000,
+        min: 1050000000,
+        max: 1100000000,
     },
     pane: {
       center: ['50%', '85%'],
@@ -84,8 +86,7 @@ function App() {
   }, [ws])
 
   useEffect(() => {
-    highchartsMore(Highcharts);
-    solidGauge(Highcharts);
+    
     init();
   }, []);
 
