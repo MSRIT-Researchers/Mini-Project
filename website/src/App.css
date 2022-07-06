@@ -17,14 +17,13 @@
 }
 
 .App-header {
-  /*background-color: #282c34;*/
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
-  color: white;
+  background-color: #1E1F24;
 }
 
 #rit-logo {
@@ -36,15 +35,41 @@
 p {
   font-size: medium;
   font-weight: 400;
+  color: white;
 }
 
 .Column {
   flex: 1;
   flex-direction: column;
-  background-color: #1E1F24;
+  background-color: #37393F;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 30px;
+  border-radius: 5px;
+  box-shadow: none;
+}
+
+.column-left {
+  margin-right: 15px;
+}
+
+.column-right {
+  margin-left: 15px;
+}
+
+.column-left:hover {
+  margin: 15px;
+  box-shadow: 3px 3px #6ED6D6, 6px 6px #81ecec;
+}
+
+.column-right:hover {
+  margin: 15px;
+  box-shadow: -3px 3px #6ED6D6, -6px 6px #81ecec;
+}
+
+.column-title {
+  color: white
 }
 
 .visualization-box {
@@ -53,16 +78,21 @@ p {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  color: white;
 }
 
 button {
-  height: 100px;
-  width: 100px;
+  height: 80px;
+  width: 80px;
   border-radius: 100px;
-  position: absolute;
   background-color: #BEE7BB;
   font-family: 'Quicksand';
   font-weight: 600;
+  border: none;
+}
+
+button:hover {
+  cursor: pointer;
 }
 
 #info-button {
@@ -86,6 +116,11 @@ img {
   padding: 2px;
   background-color: #636E72;
   font-size: small;
+  color: white;
+}
+
+#credits:hover {
+  cursor: pointer;
 }
 
 #modal {
