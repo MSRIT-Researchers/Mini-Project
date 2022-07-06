@@ -4,29 +4,35 @@ import playicon from './play_icon.png';
 import ritlogo from './rit_logo.png';
 
 import { io } from 'socket.io-client';
-import portNo from "./serverport" 
+import portNo from "./serverport"
 //import * as Highcharts from "highcharts";
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import highchartsMore from "highcharts/highcharts-more";
 import solidGauge from "highcharts/modules/solid-gauge";
 import Modal from 'react-modal';
- 
+
 function App() {
   highchartsMore(Highcharts);
   solidGauge(Highcharts);
   const [data, setData] = useState([0]);
-  const [modalIsOpen, setIsOpen] = useState(false); 
-  const [options, setOptions] = useState({  
+  const [modalIsOpen, setIsOpen] = useState(false);
+  const [options, setOptions] = useState({
     chart: {
-      type: 'solidgauge'
+      type: 'solidgauge',
+      backgroundColor:
+        '#37393F',
     },
     title: {
       text: 'Average'
     },
     yAxis: {
-        min: 1050000000,
-        max: 1100000000,
+      stops: [
+        [0.5, '#FFBFA4'], 
+        [0.5, '#F8EFBA'] 
+      ],
+      min: 1050000000,
+      max: 1100000000,
     },
     pane: {
       center: ['50%', '85%'],
@@ -35,82 +41,82 @@ function App() {
       endAngle: 90,
       background: {
         backgroundColor:
-          '#1E1F24',
+          '#37393F',
         innerRadius: '60%',
         outerRadius: '100%',
-        shape: 'arc' 
+        shape: 'arc'
       }
-    },  
+    },
     series: [{
       name: 'Avg Value',
       data: data
     }]
   });
-    let [ws,setWs]= useState(null);
-    let [count,setCount] = useState(0);
-    let [status,setStatus] = useState("");
-      // ws.onopen = (event) => {
-      //   ws.send(JSON.stringify("Hi there"));
-      // };
-    let [pingingIntervalId,setPingingIntervalId] = useState(null);
-    async function init(){
-      // get the port number from ../serverport
-      let port = await (await fetch(portNo)).text()
-      console.log(port)
-      setWs(new WebSocket(`ws://localhost:${port}/ws`))
-      
-    }
+  let [ws, setWs] = useState(null);
+  let [count, setCount] = useState(0);
+  let [status, setStatus] = useState("");
+  // ws.onopen = (event) => {
+  //   ws.send(JSON.stringify("Hi there"));
+  // };
+  let [pingingIntervalId, setPingingIntervalId] = useState(null);
+  async function init() {
+    // get the port number from ../serverport
+    let port = await (await fetch(portNo)).text()
+    console.log(port)
+    setWs(new WebSocket(`ws://localhost:${port}/ws`))
 
-    useEffect(()=>{
-      console.log(data); 
-      setOptions((prevState) => {
-        let updatedOptions = Object.assign({}, options);
-        updatedOptions.series[0].data = data;
-        return updatedOptions;
-      }) 
-    },[data])
+  }
 
-    useEffect(()=>{
-      if(ws)
+  useEffect(() => {
+    console.log(data);
+    setOptions((prevState) => {
+      let updatedOptions = Object.assign({}, options);
+      updatedOptions.series[0].data = data;
+      return updatedOptions;
+    })
+  }, [data])
+
+  useEffect(() => {
+    if (ws)
       ws.onmessage = function (event) {
         console.log('Message from server ', event.data);
-        if(event.data==="end"){
+        if (event.data === "end") {
           setStatus("end");
-        }   
-        else{
-            setCount(event.data);
-            setData([parseInt(event.data)]);  
         }
-       
+        else {
+          setCount(event.data);
+          setData([parseInt(event.data)]);
+        }
+
       };
   }, [ws])
 
   useEffect(() => {
-    
+
     init();
   }, []);
 
   useEffect(() => {
-      if(status=="start"){
-        sendData("start")
-        setStatus("ping");
-      }
-      else if(status=="ping"){
-       let id =  setInterval(()=>{
-          sendData("ping");
-          }, 3);
-        setPingingIntervalId(id);
-      }
-      else if(status=="end"){
-        console.log("Ending pinging ")
-        if(pingingIntervalId)
-          clearInterval(pingingIntervalId)
-        
-      }
-      else if(status=="kill"){
-        sendData("kill")
-      }
-    },[status])
+    if (status == "start") {
+      sendData("start")
+      setStatus("ping");
+    }
+    else if (status == "ping") {
+      let id = setInterval(() => {
+        sendData("ping");
+      }, 3);
+      setPingingIntervalId(id);
+    }
+    else if (status == "end") {
+      console.log("Ending pinging ")
+      if (pingingIntervalId)
+        clearInterval(pingingIntervalId)
+
+    }
+    else if (status == "kill") {
+      sendData("kill")
+    }
+  }, [status])
 
   function sendData(text) {
     if (ws) {
@@ -129,13 +135,13 @@ function App() {
     setStatus("kill")
   }
 
-  const handleUpdateGraph = (c) => { 
+  const handleUpdateGraph = (c) => {
     /*for (let i = 0; i < 10; ++i) {
       let prevData = data;
       prevData.push(i);
       setData([prevData]); 
     }*/
-    setData([c]); 
+    setData([c]);
     console.log(data);
     setOptions((prevState) => {
       let updatedOptions = Object.assign({}, options);
@@ -163,42 +169,42 @@ function App() {
       transform: 'translate(-50%, -50%)',
     },
   };
-   
+
   return (
     <div className="App">
       <header className="App-header">
         <img src={ritlogo} alt="RIT" id='rit-logo'></img>
-        <button onClick={handleOnCLickVisualize} style={{ top: '35%' }}><img src={playicon} alt="play"></img></button>
-        <button onClick={handleOnClickStop} style={{ top: '60%' }}>Stop</button>
+
         <button id="info-button" onClick={openModal}>?</button>
         <div style={{ display: 'flex', flexDirection: 'row', height: '100vh', width: "100%" }}>
-          <div className="Column" style={{ borderRight: "1px solid #95afc0" }}>
+          <div className="Column column-left">
             <div className='column-title'>Parallel Iteration + Progressive visualization</div>
             <div className='visualization-box'>
               <HighchartsReact highcharts={Highcharts} options={options} />
             </div>
+            <button onClick={handleOnCLickVisualize} style={{ top: '35%', color: "#96D391", fontSize: "30px" }}>▶</button>
           </div>
-          <div className="Column" style={{ borderLeft: "1px solid #95afc0" }}>
+          <div className="Column column-right">
             <div className='column-title'>Traditional querying</div>
             <div className='visualization-box'>{count}<p>is the average computed</p></div>
+            <button onClick={handleOnCLickVisualize} style={{ top: '35%', color: "#96D391", fontSize: "30px" }}>▶</button>            
           </div>
         </div>
         <div id='credits' onClick={openModal}>Made with ❤ for mini-project 2022</div>
-        <Modal  
+        <Modal
           style={customStyles}
-          isOpen={modalIsOpen} 
+          isOpen={modalIsOpen}
           onRequestClose={closeModal}
           contentLabel="Example Modal"
-        >  
-          <p>What is this project about?<br></br>This is a research-based project where we work on unique algorithms to give the best possible experience to the end user while exploring huge databases: both in terms of <em>speed</em> and <em>interactivity</em>. On the left is our new tech; on the right is the traditional mechanism</p>
-          <p>How are we doing this?<br></br>This project uniquely combines parallel iterative processing with progressive visualization to find out how the querying process can be enhanced. The backend is where much of the magic happens: our uniquely designed algorithms, with custom data structures coded from scratch.</p>
-          <p style={{ color: "#636E72" }}>Made by Sahil, Aakash, Soundarya and Subinoy</p>
+        >
+          <p style={{ color: "black" }}>What is this project about?<br></br>This is a research-based project where we work on unique algorithms to give the best possible experience to the end user while exploring huge databases: both in terms of <em>speed</em> and <em>interactivity</em>. On the left is our new tech; on the right is the traditional mechanism</p>
+          <p style={{ color: "black" }}>How are we doing this?<br></br>This project uniquely combines parallel iterative processing with progressive visualization to find out how the querying process can be enhanced. The backend is where much of the magic happens: our uniquely designed algorithms, with custom data structures coded from scratch.</p>
+          <p style={{ color: "#636E72" }}>Made by Sahil, Aakash, Soundarya and Subinoy, RIT</p>
         </Modal>
-      </header > 
-        
-    </div > 
-  );    
-}    
+      </header >
 
-export default App;    
-  
+    </div >
+  );
+}
+
+export default App;
