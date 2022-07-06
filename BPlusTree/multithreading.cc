@@ -21,7 +21,7 @@
 
 // using namespace bpt;
 
-    MultiThreadingBPT::MultiThreadingBPT() {
+    MultiThreadingBPT::MultiThreadingBPT(bool single) {
         bpt::bplus_tree database(DB_NAME); 
         bpt::meta_t meta = database.get_meta();
         // std::cout<<database.get_meta().leaf_node_num<<std::endl;
@@ -29,13 +29,12 @@
         // set the last offset as zero
         meta.thread_offsets[number_of_threads] = 0;
 
-        // double singleProcessTime = computeUsingSingleProcess();
-        double multiProcessesTime = computeUsingMultipleProcesses();
-
-        // double percentage = (singleProcessTime/multiProcessesTime) ;
-        // printf("Multiprocessing is %fx faster than a single process\n",percentage);
-        // this->serverQ.push(101);
-
+        if(single){
+            double singleProcessTime = computeUsingSingleProcess();
+        }
+        else{
+            double multiProcessesTime = computeUsingMultipleProcesses();
+        }
     }
 
     void MultiThreadingBPT::sendDataToMessageQ(long long sum, long long count){
@@ -140,8 +139,8 @@
         start = MultiThreadingBPT::timeSinceEpochMillisec();
         
         printf(UNDERLINE "\nSingle Process\n\n" CLOSEUNDERLINE);
-        multithread_aggregate(0, meta.thread_offsets[0], 0);
-        printf("Sum : %lld ,Count : %lld \n", threadResults[0].first,threadResults[0].second);
+        multithread_aggregate_single(0, meta.thread_offsets[0], 0);
+        // printf("Sum : %lld ,Count : %lld \n", threadResults[0].first,threadResults[0].second);
         
         end = timeSinceEpochMillisec();
 
@@ -157,12 +156,8 @@
         bpt::bplus_tree database(DB_NAME);
         bpt::leaf_node_t temp;
         database.run_map(&temp, start_leaf_offset);
-        int first = -1;
         while(temp.next != end_leaf_offset){
-            // printf("%d\n",temp.next);
-            // if(temp.n==0)break;
             for (size_t i = 0; i < temp.n; ++i){
-                if(first==-1)first = temp.children[i].value;
                 sum += temp.children[i].value;
                 count++;
                 c++;
@@ -173,54 +168,49 @@
                 c=0;
                 sum=0;
             }
-            // count+=temp.n;
             if(temp.next == end_leaf_offset){
                 break;
             }
             database.run_map(&temp, temp.next);
         }
-            int last = 0;
             for (size_t i = 0; i < temp.n; ++i){
                 sum += temp.children[i].value;
                 count++;
                 c++;
-                last = temp.children[i].value;
-                
             }
 
         printf("Done Processing Thread: %d with count %ld\n", thread_number, count);
         sendDataToMessageQ(sum, c);
     }
 
-    // void multithread_aggregate_last(const int thread_number, off_t start_leaf_offset)
-    // {
-    //     printf("multithreaded here\n");
-    //     long long sum = 0;
-    //     long long c = 0;
+    void MultiThreadingBPT::multithread_aggregate_single(const int thread_number, off_t start_leaf_offset, off_t end_leaf_offset){
+        long long sum = 0;
+        long long c = 0;
+        long long count =0;
+        bpt::bplus_tree database(DB_NAME);
+        bpt::leaf_node_t temp;
+        database.run_map(&temp, start_leaf_offset);
+        while(temp.next != end_leaf_offset){
+            for (size_t i = 0; i < temp.n; ++i){
+                sum += temp.children[i].value;
+                count++;
+                c++;
+            }
+            if(c>=1000){
+                // std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                c=0;
+            }
+            if(temp.next == end_leaf_offset){
+                break;
+            }
+            database.run_map(&temp, temp.next);
+        }
+            for (size_t i = 0; i < temp.n; ++i){
+                sum += temp.children[i].value;
+                count++;
+                c++;
+            }
 
-    //     bplus_tree database(DB_NAME);
-    //     leaf_node_t temp;
-    //     database.run_map(&temp, start_leaf_offset);
-
-    //     off_t end_leaf_offset = 0;
-
-    //     while (temp.next != end_leaf_offset)
-    //     {
-    //         for (int i = 0; i < temp.n; ++i)
-    //         {
-    //             sum += temp.children[i].value;
-    //             c++;
-    //         }
-    //         database.run_map(&temp, temp.next);
-    //     }
-
-    //     for (int i = 0; i < temp.n; ++i)
-    //     {
-    //         sum += temp.children[i].value;
-    //         c++;
-    //     }
-    //     database.run_map(&temp, temp.next);
-    //     // printf("sum : %lld\n", sum);
-
-    //     threadResults[thread_number] = {sum, c};
-    // }
+        printf("Done Processing Thread: %d with count %ld\n", thread_number, count);
+        sendDataToMessageQ(sum, count);
+    }

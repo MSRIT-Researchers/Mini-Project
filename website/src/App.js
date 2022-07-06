@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
 import './App.css';
-import playicon from './play_icon.png';
-import ritlogo from './rit_logo.png';
-
+import ritlogo from './assests/rit_logo.png';
+import loading from './assests/loading.gif'
 import { io } from 'socket.io-client';
 import portNo from "./serverport"
-//import * as Highcharts from "highcharts";
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import highchartsMore from "highcharts/highcharts-more";
@@ -15,8 +13,15 @@ import Modal from 'react-modal';
 function App() {
   highchartsMore(Highcharts);
   solidGauge(Highcharts);
-  const [data, setData] = useState([100000]);
+  const [pingingIntervalId, setPingingIntervalId] = useState(null);
+  const [ws, setWs] = useState(null);
+  const [count, setCount] = useState(0);
+  const [status, setStatus] = useState("");
+  const [delay, setDelay] = useState(0);
+  const [data, setData] = useState([0]);
   const [modalIsOpen, setIsOpen] = useState(false);
+  const [runSingle, setRunSingle] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [options, setOptions] = useState({
     chart: {
       type: 'solidgauge',
@@ -31,7 +36,7 @@ function App() {
         [0.5, '#FFBFA4'],
         [0.5, '#F8EFBA']
       ],
-      min: 100000,
+      min: 0,
       max: 200000,
     },
     pane: {
@@ -53,20 +58,17 @@ function App() {
       animation: false
     }]
   });
-  let [ws, setWs] = useState(null);
-  let [count, setCount] = useState(0);
-  let [status, setStatus] = useState("");
-  let [delay, setDelay] = useState(0);
-
-  let [pingingIntervalId, setPingingIntervalId] = useState(null);
+  
   async function init() {
-
     // get the port number from ../serverport
     let port = await (await fetch(portNo)).text()
     console.log(port)
     setWs(new WebSocket(`ws://localhost:${port}/ws`))
-
   }
+
+  useEffect(() => {
+    init();
+  }, []);
 
   useEffect(() => {
     if (delay === 100) {
@@ -77,43 +79,53 @@ function App() {
       })
       setDelay(0);
     }
-
   }, [delay]);
 
+  useEffect(()=>{
+    console.log("Changed value of runSingle ", runSingle);
+  },[runSingle])
+
+  // const getRunSingle = ()=>{
+  //   return runSingle;
+  // }
   useEffect(() => {
+    console.log("Inside UseEffect ",runSingle);
     if (ws)
       ws.onmessage = function (event) {
         console.log('Message from server ', event.data);
         if (event.data === "end") {
           setStatus("end");
         }
+        // else if(getRunSingle()){
+        //   console.log("removing loading gif")
+        //   setIsLoading(false);
+        //   setCount(event.data);
+        //   setRunSingle(false);
+        // }
         else {
+          // console.log(getRunSingle());
           setCount(event.data);
-          setData([parseFloat(event.data)]);
+          setData([parseInt(event.data)]);
           setDelay(prevDelay => {
             return prevDelay + 1;
           });
         }
-
-
       };
   }, [ws])
 
   useEffect(() => {
-
-    init();
-  }, []);
-
-  useEffect(() => {
     if (status == "start") {
-      sendData("start")
-      setStatus("ping");
+        sendData("start")
+        setStatus("ping");
     }
     else if (status == "ping") {
       let id = setInterval(() => {
         sendData("ping");
       }, 3);
       setPingingIntervalId(id);
+    }
+    else if(status=="startSingle"){
+      sendData("startSingle");
     }
     else if (status == "end") {
       console.log("Ending pinging ")
@@ -124,14 +136,13 @@ function App() {
           updatedOptions.series[0].data = data;
           return updatedOptions;
         })
-
     }
     else if (status == "kill") {
       sendData("kill")
     }
   }, [status])
 
-  function sendData(text) {
+  const sendData = (text)=>{
     if (ws) {
       ws.send(text);
     }
@@ -144,31 +155,21 @@ function App() {
   const handleOnCLickVisualize = () => {
     setStatus("start");
   }
+
+  const handleOnCLickVisualizeSingle = ()=>{
+    // setRunSingle(true);
+    // setIsLoading(true);
+    setStatus("startSingle");
+  }
   const handleOnClickStop = () => {
     setStatus("kill")
   }
 
-  const handleUpdateGraph = (c) => {
-    /*for (let i = 0; i < 10; ++i) {
-      let prevData = data;
-      prevData.push(i);
-      setData([prevData]); 
-    }*/
-    setData([c]);
-    console.log(data);
-    setOptions((prevState) => {
-      let updatedOptions = Object.assign({}, options);
-      updatedOptions.series[0].data = data;
-      return updatedOptions;
-    })
-    // console.log(options);
-  }
-
-  function openModal() {
+  const openModal = ()=>{
     setIsOpen(true);
   }
 
-  function closeModal() {
+  const closeModal = ()=>{
     setIsOpen(false);
   }
 
@@ -199,8 +200,9 @@ function App() {
           </div>
           <div className="Column column-right">
             <div className='column-title'>Traditional querying</div>
-            <div className='visualization-box'>{count}<p>is the average computed</p></div>
-            <button onClick={handleOnCLickVisualize} style={{ top: '35%', color: "#96D391", fontSize: "30px" }}>▶</button>
+            {isLoading?<img src={loading} alt='loading' id='loading'/>:
+            <div className='visualization-box'>{count}<p>is the average computed</p></div>}
+            <button onClick={handleOnCLickVisualizeSingle} style={{ top: '35%', color: "#96D391", fontSize: "30px" }}>▶</button>
           </div>
         </div>
         <div id='credits' onClick={openModal}>Made with ❤ for mini-project 2022</div>

@@ -45,10 +45,10 @@ void listenToStream(){
         msgctl(msgid, IPC_RMID, NULL);
 }
 
-void init(){
+void init(bool single=false){
     pid_t pid = fork();
     if(pid==0){
-        MultiThreadingBPT mtbpt = MultiThreadingBPT();
+        MultiThreadingBPT mtbpt = MultiThreadingBPT(single);
         exit(0);
     }
     // listenToStream();
@@ -69,7 +69,6 @@ void init(){
 //     while(wait(NULL)>0);
 // }
 int main(){
-    
     key_t key2 = ftok("server.cc", 64);
     int msgid2 = msgget(key2, 0666 | IPC_CREAT);
     msgctl(msgid2, IPC_RMID, NULL);
@@ -128,6 +127,14 @@ int main(){
                     current->send_text("end");                
     
                 }
+          }
+          else if(data=="startSingle"){
+            std::cout<<data<<std::endl;
+            message2.count = 0;
+            init(true);
+            msgrcv(msgid2, &message2, sizeof(message2), 0,0);
+            printf("sending single thread avg: %d\n", message2.sum);
+            current->send_text(std::to_string(message2.sum)); 
           }
           else if(data=="kill"){
               app.stop();
