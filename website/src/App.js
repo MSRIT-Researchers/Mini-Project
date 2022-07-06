@@ -81,29 +81,14 @@ function App() {
     }
   }, [delay]);
 
-  useEffect(()=>{
-    console.log("Changed value of runSingle ", runSingle);
-  },[runSingle])
-
-  // const getRunSingle = ()=>{
-  //   return runSingle;
-  // }
   useEffect(() => {
-    console.log("Inside UseEffect ",runSingle);
     if (ws)
       ws.onmessage = function (event) {
         console.log('Message from server ', event.data);
         if (event.data === "end") {
           setStatus("end");
         }
-        // else if(getRunSingle()){
-        //   console.log("removing loading gif")
-        //   setIsLoading(false);
-        //   setCount(event.data);
-        //   setRunSingle(false);
-        // }
         else {
-          // console.log(getRunSingle());
           setCount(event.data);
           setData([parseInt(event.data)]);
           setDelay(prevDelay => {
@@ -142,6 +127,13 @@ function App() {
     }
   }, [status])
 
+  useEffect(()=>{
+    if(runSingle){
+      setIsLoading(false);
+      setRunSingle(false);
+    }
+  },[count])
+
   const sendData = (text)=>{
     if (ws) {
       ws.send(text);
@@ -157,8 +149,8 @@ function App() {
   }
 
   const handleOnCLickVisualizeSingle = ()=>{
-    // setRunSingle(true);
-    // setIsLoading(true);
+    setRunSingle(true);
+    setIsLoading(true);
     setStatus("startSingle");
   }
   const handleOnClickStop = () => {
