@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
 import './App.css';
-import playicon from './play_icon.png';
-import ritlogo from './rit_logo.png';
-
+import ritlogo from './assests/rit_logo.png';
+import loading from './assests/loading.gif'
 import { io } from 'socket.io-client';
 import portNo from "./serverport"
-//import * as Highcharts from "highcharts";
 import Highcharts from 'highcharts';
 import HighchartsReact from 'highcharts-react-official';
 import highchartsMore from "highcharts/highcharts-more";
@@ -199,6 +197,7 @@ function App() {
           </div>
           <div className="Column column-right">
             <div className='column-title'>Traditional querying</div>
+            <img src={loading} alt='loading' id='loading'/>
             <div className='visualization-box'>{count}<p>is the average computed</p></div>
             <button onClick={handleOnCLickVisualize} style={{ top: '35%', color: "#96D391", fontSize: "30px" }}>▶</button>
           </div>
