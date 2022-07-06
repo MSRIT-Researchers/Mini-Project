@@ -10,7 +10,7 @@
 #include <sys/wait.h>
 #include <fstream>
 
-int limit = 10*500000;
+int limit = 6362620;
 
 void listenToStream(){
         key_t key = ftok("random", 65);
