@@ -163,7 +163,7 @@
                 c++;
             }
             if(c>=1000){
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                std::this_thread::sleep_for(std::chrono::milliseconds(5));
                 sendDataToMessageQ(sum, c);
                 c=0;
                 sum=0;
@@ -197,7 +197,7 @@
                 c++;
             }
             if(c>=1000){
-                // std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                std::this_thread::sleep_for(std::chrono::milliseconds(5));
                 c=0;
             }
             if(temp.next == end_leaf_offset){
