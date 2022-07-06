@@ -15,7 +15,7 @@ import Modal from 'react-modal';
 function App() {
   highchartsMore(Highcharts);
   solidGauge(Highcharts);
-  const [data, setData] = useState([0]);
+  const [data, setData] = useState([1050000000]);
   const [modalIsOpen, setIsOpen] = useState(false); 
   const [options, setOptions] = useState({  
     chart: {
@@ -43,17 +43,18 @@ function App() {
     },  
     series: [{
       name: 'Avg Value',
-      data: data
+      data: data,
+      animation: false
     }]
   });
     let [ws,setWs]= useState(null);
     let [count,setCount] = useState(0);
     let [status,setStatus] = useState("");
-      // ws.onopen = (event) => {
-      //   ws.send(JSON.stringify("Hi there"));
-      // };
+    let [delay, setDelay] = useState(0);
+    
     let [pingingIntervalId,setPingingIntervalId] = useState(null);
     async function init(){
+
       // get the port number from ../serverport
       let port = await (await fetch(portNo)).text()
       console.log(port)
@@ -62,13 +63,16 @@ function App() {
     }
 
     useEffect(()=>{
-      console.log(data); 
-      setOptions((prevState) => {
-        let updatedOptions = Object.assign({}, options);
-        updatedOptions.series[0].data = data;
-        return updatedOptions;
-      }) 
-    },[data])
+      if(delay===100){
+        setOptions((prevState) => {
+          let updatedOptions = Object.assign({}, options);
+          updatedOptions.series[0].data = data;
+          return updatedOptions;
+        }) 
+        setDelay(0);
+      }
+      
+    },[delay]);
 
     useEffect(()=>{
       if(ws)
@@ -79,7 +83,11 @@ function App() {
         }   
         else{
             setCount(event.data);
-            setData([parseInt(event.data)]);  
+            setData([parseInt(event.data)]); 
+            // let prevDelay = delay+1;
+            setDelay(prevDelay=>{
+              return prevDelay+1;
+            });
         }
        
       };
