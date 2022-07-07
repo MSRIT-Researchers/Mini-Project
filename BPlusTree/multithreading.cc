@@ -60,7 +60,7 @@
         int totalCount=0;
         while(totalCount<THREAD_NUM*RANGE){
             msgrcv(msgid, &message, sizeof(message), 0, 0);
-            printf("got sum: %lld, got count %lld\n", message.sum, message.count);
+            // printf("got sum: %lld, got count %lld\n", message.sum, message.count);
             totalCount+=message.count;
         }
         
@@ -163,7 +163,7 @@
                 c++;
             }
             if(c>=1000){
-                std::this_thread::sleep_for(std::chrono::milliseconds(5));
+                // std::this_thread::sleep_for(std::chrono::milliseconds(5));
                 sendDataToMessageQ(sum, c);
                 c=0;
                 sum=0;
@@ -197,7 +197,7 @@
                 c++;
             }
             if(c>=1000){
-                std::this_thread::sleep_for(std::chrono::milliseconds(5));
+                // std::this_thread::sleep_for(std::chrono::milliseconds(5));
                 c=0;
             }
             if(temp.next == end_leaf_offset){

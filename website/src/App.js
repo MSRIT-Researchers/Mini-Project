@@ -179,6 +179,9 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
+      <span style={{color:"white",paddingTop:"10px"}}>
+        Average Online Fraud Amount
+        </span>
         <img src={ritlogo} alt="RIT" id='rit-logo'></img>
 
         <button id="info-button" onClick={openModal}>?</button>

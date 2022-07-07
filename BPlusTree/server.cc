@@ -35,7 +35,7 @@ void listenToStream(){
         printf("totalCount %d totalSum %lld \n", totalCount, sum);
          struct msqid_ds mesg_stat;
         msgctl(msgid,IPC_STAT,&mesg_stat);
-        printf("Size: %d\n", mesg_stat.msg_qnum);
+        // printf("Size: %d\n", mesg_stat.msg_qnum);
         int iter = mesg_stat.msg_qnum;
         while(iter>0){
             msgrcv(msgid, &message2, sizeof(message2), 0, 0);
@@ -114,7 +114,7 @@ int main(){
                 if(message2.count<limit){
                     struct msqid_ds mesg_stat;
                     msgctl(msgid2,IPC_STAT,&mesg_stat);
-                    printf("Size: %d\n", mesg_stat.msg_qnum);
+                    // printf("Size: %d\n", mesg_stat.msg_qnum);
                     int iter = mesg_stat.msg_qnum;
                     while(iter>1){
                         msgrcv(msgid2, &message2, sizeof(message2), 0, 0);
