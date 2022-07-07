@@ -133,7 +133,7 @@ int main(){
             message2.count = 0;
             init(true);
             msgrcv(msgid2, &message2, sizeof(message2), 0,0);
-            printf("sending single thread avg: %d\n", message2.sum);
+            printf("sending single thread avg: %lld\n", message2.sum);
             current->send_text(std::to_string(message2.sum)); 
           }
           else if(data=="kill"){

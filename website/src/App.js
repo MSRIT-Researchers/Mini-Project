@@ -16,6 +16,7 @@ function App() {
   const [pingingIntervalId, setPingingIntervalId] = useState(null);
   const [ws, setWs] = useState(null);
   const [count, setCount] = useState(0);
+  const [isMultiThreading,setIsMultiThreading] = useState(false)
   const [status, setStatus] = useState("");
   const [delay, setDelay] = useState(0);
   const [data, setData] = useState([0]);
@@ -29,7 +30,7 @@ function App() {
         '#37393F',
     },
     title: {
-      text: 'Average'
+      text: ''
     },
     yAxis: {
       stops: [
@@ -89,6 +90,7 @@ function App() {
           setStatus("end");
         }
         else {
+          setIsLoading(false)
           setCount(event.data);
           setData([parseInt(event.data)]);
           setDelay(prevDelay => {
@@ -145,10 +147,12 @@ function App() {
   }
 
   const handleOnCLickVisualize = () => {
+    setIsMultiThreading(true);
     setStatus("start");
   }
 
   const handleOnCLickVisualizeSingle = ()=>{
+    setIsMultiThreading(false);
     setRunSingle(true);
     setIsLoading(true);
     setStatus("startSingle");
@@ -191,12 +195,13 @@ function App() {
             <div className='visualization-box'>
               <HighchartsReact highcharts={Highcharts} options={options} />
             </div>
+            <div style={{color:"white",marginBottom:20}}>{!isMultiThreading?0:count}</div>
             <button onClick={handleOnCLickVisualize} style={{ top: '35%', color: "#96D391", fontSize: "30px" }}>▶</button>
           </div>
           <div className="Column column-right">
             <div className='column-title'>Traditional querying</div>
             {isLoading?<img src={loading} alt='loading' id='loading'/>:
-            <div className='visualization-box'>{count}<p>is the average computed</p></div>}
+            <div className='visualization-box'>{isMultiThreading?0:count}<p>is the average computed</p></div>}
             <button onClick={handleOnCLickVisualizeSingle} style={{ top: '35%', color: "#96D391", fontSize: "30px" }}>▶</button>
           </div>
         </div>

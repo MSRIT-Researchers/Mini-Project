@@ -30,10 +30,10 @@
         meta.thread_offsets[number_of_threads] = 0;
 
         if(single){
-            double singleProcessTime = computeUsingSingleProcess();
+            computeUsingSingleProcess();
         }
         else{
-            double multiProcessesTime = computeUsingMultipleProcesses();
+             computeUsingMultipleProcesses();
         }
     }
 
@@ -47,7 +47,7 @@
         key = ftok("random", 65);
         msgid = msgget(key, 0666 | IPC_CREAT);
         // printf("sending data here\n");
-        int returnVal = msgsnd(msgid, &message, sizeof(message), 0);     
+        msgsnd(msgid, &message, sizeof(message), 0);     
         // printf("sent\n return value: %d", returnVal);   
     }
 
@@ -90,7 +90,7 @@
         printf(UNDERLINE "Multiple processes - Number of offsets: %ld\n\n" CLOSEUNDERLINE,meta.number_of_threads );
         for(size_t i=0; i<meta.number_of_threads; ++i){
             database.run_map(&leaf, meta.thread_offsets[i]);
-            printf("Process %lu runs from offset %d with value: %d\n",i,meta.thread_offsets[i] ,leaf.children[0].value);
+            printf("Process %lu runs from offset %ld with value: %d\n",i,meta.thread_offsets[i] ,leaf.children[0].value);
         }
         // puts("\n single process");
         // bpt::leaf_node_t leaf2;
@@ -163,7 +163,7 @@
                 c++;
             }
             if(c>=1000){
-                // std::this_thread::sleep_for(std::chrono::milliseconds(5));
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 sendDataToMessageQ(sum, c);
                 c=0;
                 sum=0;
@@ -179,7 +179,7 @@
                 c++;
             }
 
-        printf("Done Processing Thread: %d with count %ld\n", thread_number, count);
+        printf("Done Processing Thread: %d with count %lld\n", thread_number, count);
         sendDataToMessageQ(sum, c);
     }
 
@@ -197,7 +197,7 @@
                 c++;
             }
             if(c>=1000){
-                // std::this_thread::sleep_for(std::chrono::milliseconds(5));
+                std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 c=0;
             }
             if(temp.next == end_leaf_offset){
@@ -211,6 +211,6 @@
                 c++;
             }
 
-        printf("Done Processing Thread: %d with count %ld\n", thread_number, count);
+        printf("Done Processing Thread: %d with count %lld\n", thread_number, count);
         sendDataToMessageQ(sum, count);
     }
