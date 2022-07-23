@@ -131,7 +131,7 @@
         uint64_t endTime = timeSinceEpochMillisec();
 
         double multiProcessesTime = (endTime - startTime)/1000.0;
-        printf("time taken by Multiprocessing: %f s\n\n", multiProcessesTime);
+        printf("time taken by Multithreading: %f s\n\n", multiProcessesTime);
 
         return multiProcessesTime;
     }
@@ -202,7 +202,7 @@
                 c++;
             }
             if(c>=1000){
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                // std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 c=0;
             }
             if(temp.next == end_leaf_offset){
