@@ -67,12 +67,15 @@
         msgctl(msgid, IPC_RMID, NULL);
     }
 
-    void MultiThreadingBPT::spawnChild(int i , int startOffset , int endOffset){
-        pid_t pid = fork();
-        if(pid == 0){
-            multithread_aggregate(i,startOffset,endOffset);
-            exit(0);
-        }
+    std::thread MultiThreadingBPT::spawnChild(int i , int startOffset , int endOffset){
+        std::thread th(&MultiThreadingBPT::multithread_aggregate,this,i ,startOffset,endOffset);
+        printf("yo yo y");
+        return th;
+        // pid_t pid = fork();
+        // if(pid == 0){
+        //     multithread_aggregate(i,startOffset,endOffset);
+        //     exit(0);
+        // }
     }
 
     // Get the time since epoch in milliseconds
@@ -104,15 +107,17 @@
 
         uint64_t startTime =timeSinceEpochMillisec();
         meta.thread_offsets[meta.number_of_threads] = 0;
+        std::vector<std::thread> threads;
         for (size_t i = 0; i < meta.number_of_threads ; ++i){
-            spawnChild(i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
+            threads.push_back(spawnChild(i, meta.thread_offsets[i], meta.thread_offsets[i+1]));
         }
 
         
 
         // Wait for all processes to complete
         for(size_t i=0; i<meta.number_of_threads; i++){
-            wait(NULL);
+            // wait(NULL);
+            threads[i].join();
         }
         /// aggregate the results
         long long int fsum =0, fcount = 0;
@@ -163,7 +168,7 @@
                 c++;
             }
             if(c>=1000){
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                // std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 sendDataToMessageQ(sum, c);
                 c=0;
                 sum=0;
