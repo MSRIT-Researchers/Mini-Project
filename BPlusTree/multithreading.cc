@@ -15,6 +15,7 @@
 #include <sys/msg.h>
 #include "variables.h"
 #include <thread>
+#include <omp.h>
 
 #define UNDERLINE "\033[4m"
 #define CLOSEUNDERLINE "\033[0m"
@@ -101,18 +102,35 @@
 
         uint64_t startTime =timeSinceEpochMillisec();
         meta.thread_offsets[meta.number_of_threads] = 0;
-        std::vector<std::thread> threads;
+
+
+        // #pragma omp parallel
+        // {
+        //     // usleep(5000 * omp_get_thread_num()); // do this to avoid race condition while printing
+        //     // std::cout << "Number of available threads: " << omp_get_num_threads() << std::endl;
+        //     // // each thread can also get its own number
+        //     // std::cout << "Hello, World!" << std::endl;
+        //     int i = omp_get_thread_num();
+        //     std::cout << "Current thread number: " << omp_get_thread_num() << std::endl;
+        //     spawnThread(i, meta.thread_offsets[i], meta.thread_offsets[i+1]);   
+        // }
+
+        // std::vector<std::thread> threads;
+        #pragma omp parallel
+        #pragma omp for
         for (size_t i = 0; i < meta.number_of_threads ; ++i){
-            threads.push_back(spawnThread(i, meta.thread_offsets[i], meta.thread_offsets[i+1]));
+            // threads.push_back(spawnThread(i, meta.thread_offsets[i], meta.thread_offsets[i+1]));
+            spawnThread(i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
         }
 
         
 
         // Wait for all processes to complete
-        for(size_t i=0; i<meta.number_of_threads; i++){
-            // wait(NULL);
-            threads[i].join();
-        }
+        // for(size_t i=0; i<meta.number_of_threads; i++){
+        //     // wait(NULL);
+        //     threads[i].join();
+        // }
+
         /// aggregate the results
         long long int fsum =0, fcount = 0;
         for(size_t i  =  0;i<meta.number_of_threads;i++){

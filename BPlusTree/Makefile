@@ -69,13 +69,13 @@ insertDb: $(INSERT)
 	$(QUIET_LINK)$(CXX) -o insert $(CCOPT) $(DEBUG) $(INSERT) $(CCLINK)
 
 multithreading: $(MULTITHREADING)
-	$(QUIET_LINK)$(CXX) -pthread -o multithreading $(CCOPT) $(DEBUG) $(MULTITHREADING) $(CCLINK) 
+	$(QUIET_LINK)$(CXX) -fopenmp -pthread -o multithreading $(CCOPT) $(DEBUG) $(MULTITHREADING) $(CCLINK) 
 
 testdb: $(TESTDB)
 	$(QUIET_LINK)$(CXX) -o testdb $(CCOPT) $(DEBUG) $(TESTDB) $(CCLINK)
 
 server: server.cc multithreading.o variables.h
-	g++ server.cc multithreading.o bpt.o -o server -L /usr/lib/ -lboost_system -lboost_thread -lpthread
+	g++  server.cc multithreading.o bpt.o -o server -L /usr/lib/ -lboost_system -lboost_thread -lpthread -fopenmp
 
 run_insert :
 	touch test.db && rm test.db && make insertDb && touch test.db && ./insert
