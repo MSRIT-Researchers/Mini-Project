@@ -64,10 +64,6 @@ void init(bool single=false){
     return;
 }
 
-// int main(){
-//     init();
-//     while(wait(NULL)>0);
-// }
 int main(){
     key_t key2 = ftok("server.cc", 64);
     int msgid2 = msgget(key2, 0666 | IPC_CREAT);

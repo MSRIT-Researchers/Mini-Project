@@ -67,12 +67,9 @@
         msgctl(msgid, IPC_RMID, NULL);
     }
 
-    void MultiThreadingBPT::spawnChild(int i , int startOffset , int endOffset){
-        pid_t pid = fork();
-        if(pid == 0){
-            multithread_aggregate(i,startOffset,endOffset);
-            exit(0);
-        }
+    std::thread MultiThreadingBPT::spawnThread(int i , int startOffset , int endOffset){
+        std::thread th(&MultiThreadingBPT::multithread_aggregate,this,i ,startOffset,endOffset);
+        return th;
     }
 
     // Get the time since epoch in milliseconds
@@ -104,15 +101,17 @@
 
         uint64_t startTime =timeSinceEpochMillisec();
         meta.thread_offsets[meta.number_of_threads] = 0;
+        std::vector<std::thread> threads;
         for (size_t i = 0; i < meta.number_of_threads ; ++i){
-            spawnChild(i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
+            threads.push_back(spawnThread(i, meta.thread_offsets[i], meta.thread_offsets[i+1]));
         }
 
         
 
         // Wait for all processes to complete
         for(size_t i=0; i<meta.number_of_threads; i++){
-            wait(NULL);
+            // wait(NULL);
+            threads[i].join();
         }
         /// aggregate the results
         long long int fsum =0, fcount = 0;
@@ -126,7 +125,7 @@
         uint64_t endTime = timeSinceEpochMillisec();
 
         double multiProcessesTime = (endTime - startTime)/1000.0;
-        printf("time taken by Multiprocessing: %f s\n\n", multiProcessesTime);
+        printf("time taken by Multithreading: %f s\n\n", multiProcessesTime);
 
         return multiProcessesTime;
     }
@@ -163,7 +162,7 @@
                 c++;
             }
             if(c>=1000){
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                // std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 sendDataToMessageQ(sum, c);
                 c=0;
                 sum=0;
@@ -197,7 +196,7 @@
                 c++;
             }
             if(c>=1000){
-                std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                // std::this_thread::sleep_for(std::chrono::milliseconds(1));
                 c=0;
             }
             if(temp.next == end_leaf_offset){
