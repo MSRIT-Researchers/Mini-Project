@@ -67,15 +67,9 @@
         msgctl(msgid, IPC_RMID, NULL);
     }
 
-    std::thread MultiThreadingBPT::spawnChild(int i , int startOffset , int endOffset){
+    std::thread MultiThreadingBPT::spawnThread(int i , int startOffset , int endOffset){
         std::thread th(&MultiThreadingBPT::multithread_aggregate,this,i ,startOffset,endOffset);
-        printf("yo yo y");
         return th;
-        // pid_t pid = fork();
-        // if(pid == 0){
-        //     multithread_aggregate(i,startOffset,endOffset);
-        //     exit(0);
-        // }
     }
 
     // Get the time since epoch in milliseconds
@@ -109,7 +103,7 @@
         meta.thread_offsets[meta.number_of_threads] = 0;
         std::vector<std::thread> threads;
         for (size_t i = 0; i < meta.number_of_threads ; ++i){
-            threads.push_back(spawnChild(i, meta.thread_offsets[i], meta.thread_offsets[i+1]));
+            threads.push_back(spawnThread(i, meta.thread_offsets[i], meta.thread_offsets[i+1]));
         }
 
         
