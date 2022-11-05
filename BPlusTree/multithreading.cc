@@ -116,14 +116,82 @@
         // }
 
         // std::vector<std::thread> threads;
-        #pragma omp parallel
-        #pragma omp for
-        for (size_t i = 0; i < meta.number_of_threads ; ++i){
-            // threads.push_back(spawnThread(i, meta.thread_offsets[i], meta.thread_offsets[i+1]));
-            spawnThread(i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
+
+        omp_set_num_threads(8);
+                    
+        // bpt::bplus_tree database(DB_NAME);
+        // int start_leaf_offset;
+        // int end_leaf_offset;
+        // long long sum = 0;
+        // long long c = 0;
+        // long long count =0;
+        // bpt::leaf_node_t temp;
+        // int i;
+
+        #pragma omp parallel 
+        {
+            int i = omp_get_thread_num();
+            multithread_aggregate(i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
+
         }
 
-        
+
+        // #pragma omp parallel for
+        // {
+        //     for(int k=0; k<8; ++k)
+        //         printf("HEllo from threads %d\n", omp_get_thread_num());
+        // }
+
+        // #pragma omp parallel for shared(meta, database) private(i, sum, c, count, temp)
+        // {
+        // // #pragma omp for
+        //     // for (size_t i = 0; i < meta.number_of_threads ; ++i){
+        //         // threads.push_back(spawnThread(i, meta.thread_offsets[i], meta.thread_offsets[i+1]));
+        //         // multithread_aggregate(i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
+
+        //     // i = omp_get_thread_num();
+        //         // multithread_aggregate(i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
+
+        //     // }
+        //     start_leaf_offset = meta.thread_offsets[i];
+        //     end_leaf_offset = meta.thread_offsets[i+1];
+        //     sum = 0;
+        //     c = 0;
+        //     count =0;
+        //     // bpt::bplus_tree database(DB_NAME);
+        //     // bpt::leaf_node_t temp;
+        //     database.run_map(&temp, start_leaf_offset);
+        //     while(temp.next != end_leaf_offset){
+        //         {
+        //         for (size_t i = 0; i < temp.n; ++i){
+        //             sum += temp.children[i].value;
+        //             count++;
+        //             c++;
+        //         }
+        //         if(c>=1000){
+        //             // std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        //             c=0;
+        //         }
+        //         if(temp.next == end_leaf_offset){
+        //             break;
+        //         }
+        //         database.run_map(&temp, temp.next);
+        //         }
+        //     }
+
+        //     {
+        //         for (size_t i = 0; i < temp.n; ++i){
+        //             sum += temp.children[i].value;
+        //             count++;
+        //             c++;
+        //         }
+        //     }
+
+        //     printf("Done Processing Thread: %d with count %lld\n", i, count);
+        //     // sendDataToMessageQ(sum, count);
+
+
+        // }
 
         // Wait for all processes to complete
         // for(size_t i=0; i<meta.number_of_threads; i++){
@@ -181,7 +249,7 @@
             }
             if(c>=1000){
                 // std::this_thread::sleep_for(std::chrono::milliseconds(1));
-                sendDataToMessageQ(sum, c);
+                // sendDataToMessageQ(sum, c);
                 c=0;
                 sum=0;
             }
@@ -197,7 +265,7 @@
             }
 
         printf("Done Processing Thread: %d with count %lld\n", thread_number, count);
-        sendDataToMessageQ(sum, c);
+        // sendDataToMessageQ(sum, c);
     }
 
     void MultiThreadingBPT::multithread_aggregate_single(const int thread_number, off_t start_leaf_offset, off_t end_leaf_offset){
@@ -229,5 +297,14 @@
             }
 
         printf("Done Processing Thread: %d with count %lld\n", thread_number, count);
-        sendDataToMessageQ(sum, count);
+        // sendDataToMessageQ(sum, count);
     }
+
+
+int main(){
+
+    MultiThreadingBPT multi(false);
+
+
+    MultiThreadingBPT mult(true);
+}

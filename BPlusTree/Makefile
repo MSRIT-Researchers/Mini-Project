@@ -68,8 +68,12 @@ bpt_dump_numbers: $(DUMP_OBJ)
 insertDb: $(INSERT)
 	$(QUIET_LINK)$(CXX) -o insert $(CCOPT) $(DEBUG) $(INSERT) $(CCLINK)
 
+# multithreading: $(MULTITHREADING)
+# 	$(QUIET_LINK)$(CXX) -fopenmp -pthread -o multithreading $(CCOPT) $(DEBUG) $(MULTITHREADING) $(CCLINK) 
+
 multithreading: $(MULTITHREADING)
-	$(QUIET_LINK)$(CXX) -fopenmp -pthread -o multithreading $(CCOPT) $(DEBUG) $(MULTITHREADING) $(CCLINK) 
+	g++ -fopenmp -o multithreading multithreading.o bpt.o
+
 
 testdb: $(TESTDB)
 	$(QUIET_LINK)$(CXX) -o testdb $(CCOPT) $(DEBUG) $(TESTDB) $(CCLINK)
@@ -79,8 +83,12 @@ server: server.cc multithreading.o variables.h
 
 run_insert :
 	touch test.db && rm test.db && make insertDb && touch test.db && ./insert
+# %.o: %.cc
+# 	$(QUIET_CC)$(CXX) -o $@ -c $(CFLAGS) $(TEST) $(DEBUG) $(COMPILE_TIME) $<
+
 %.o: %.cc
-	$(QUIET_CC)$(CXX) -o $@ -c $(CFLAGS) $(TEST) $(DEBUG) $(COMPILE_TIME) $<
+	g++ -o $@ -c $(CFLAGS) $(TEST) $(DEBUG) $(COMPILE_TIME) $<
+
 
 # Deps (use make dep to generate this)
 bpt.o: bpt.cc bpt.h predefined.h
