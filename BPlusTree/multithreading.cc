@@ -22,7 +22,7 @@
 
 // using namespace bpt;
 
-    MultiThreadingBPT::MultiThreadingBPT(bool single) {
+    MultiThreadingBPT::MultiThreadingBPT(bool single, bool openMP) {
         bpt::bplus_tree database(DB_NAME); 
         bpt::meta_t meta = database.get_meta();
         // std::cout<<database.get_meta().leaf_node_num<<std::endl;
@@ -34,7 +34,7 @@
             computeUsingSingleProcess();
         }
         else{
-             computeUsingMultipleProcesses();
+             computeUsingMultipleProcesses(openMP);
         }
     }
 
@@ -79,7 +79,7 @@
         return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
     }
 
-    double MultiThreadingBPT::computeUsingMultipleProcesses(){
+    double MultiThreadingBPT::computeUsingMultipleProcesses(bool openMP){
 
         bpt::bplus_tree database(DB_NAME);
         bpt::meta_t meta = database.get_meta();
@@ -104,100 +104,31 @@
         meta.thread_offsets[meta.number_of_threads] = 0;
 
 
-        // #pragma omp parallel
-        // {
-        //     // usleep(5000 * omp_get_thread_num()); // do this to avoid race condition while printing
-        //     // std::cout << "Number of available threads: " << omp_get_num_threads() << std::endl;
-        //     // // each thread can also get its own number
-        //     // std::cout << "Hello, World!" << std::endl;
-        //     int i = omp_get_thread_num();
-        //     std::cout << "Current thread number: " << omp_get_thread_num() << std::endl;
-        //     spawnThread(i, meta.thread_offsets[i], meta.thread_offsets[i+1]);   
-        // }
+        if(openMP){
+            omp_set_num_threads(8);
+        
+            #pragma omp parallel 
+            {
+                int i = omp_get_thread_num();
+                multithread_aggregate(i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
 
-        // std::vector<std::thread> threads;
+            }
+        }
+        else{
+            std::vector<std::thread> threads(meta.number_of_threads);
 
-        omp_set_num_threads(8);
-                    
-        // bpt::bplus_tree database(DB_NAME);
-        // int start_leaf_offset;
-        // int end_leaf_offset;
-        // long long sum = 0;
-        // long long c = 0;
-        // long long count =0;
-        // bpt::leaf_node_t temp;
-        // int i;
+            for(int i=0; i<meta.number_of_threads; ++i){
+                threads[i] = spawnThread(i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
+            }
 
-        #pragma omp parallel 
-        {
-            int i = omp_get_thread_num();
-            multithread_aggregate(i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
-
+            // Wait for all processes to complete
+            for(size_t i=0; i<meta.number_of_threads; i++){
+                // wait(NULL);
+                threads[i].join();
+            }
         }
 
-
-        // #pragma omp parallel for
-        // {
-        //     for(int k=0; k<8; ++k)
-        //         printf("HEllo from threads %d\n", omp_get_thread_num());
-        // }
-
-        // #pragma omp parallel for shared(meta, database) private(i, sum, c, count, temp)
-        // {
-        // // #pragma omp for
-        //     // for (size_t i = 0; i < meta.number_of_threads ; ++i){
-        //         // threads.push_back(spawnThread(i, meta.thread_offsets[i], meta.thread_offsets[i+1]));
-        //         // multithread_aggregate(i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
-
-        //     // i = omp_get_thread_num();
-        //         // multithread_aggregate(i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
-
-        //     // }
-        //     start_leaf_offset = meta.thread_offsets[i];
-        //     end_leaf_offset = meta.thread_offsets[i+1];
-        //     sum = 0;
-        //     c = 0;
-        //     count =0;
-        //     // bpt::bplus_tree database(DB_NAME);
-        //     // bpt::leaf_node_t temp;
-        //     database.run_map(&temp, start_leaf_offset);
-        //     while(temp.next != end_leaf_offset){
-        //         {
-        //         for (size_t i = 0; i < temp.n; ++i){
-        //             sum += temp.children[i].value;
-        //             count++;
-        //             c++;
-        //         }
-        //         if(c>=1000){
-        //             // std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        //             c=0;
-        //         }
-        //         if(temp.next == end_leaf_offset){
-        //             break;
-        //         }
-        //         database.run_map(&temp, temp.next);
-        //         }
-        //     }
-
-        //     {
-        //         for (size_t i = 0; i < temp.n; ++i){
-        //             sum += temp.children[i].value;
-        //             count++;
-        //             c++;
-        //         }
-        //     }
-
-        //     printf("Done Processing Thread: %d with count %lld\n", i, count);
-        //     // sendDataToMessageQ(sum, count);
-
-
-        // }
-
-        // Wait for all processes to complete
-        // for(size_t i=0; i<meta.number_of_threads; i++){
-        //     // wait(NULL);
-        //     threads[i].join();
-        // }
+        
 
         /// aggregate the results
         long long int fsum =0, fcount = 0;
@@ -303,8 +234,9 @@
 
 int main(){
 
-    MultiThreadingBPT multi(false);
+    MultiThreadingBPT multiNative(false, false);
 
+    MultiThreadingBPT multiOpenMP(false, true);
 
-    MultiThreadingBPT mult(true);
+    MultiThreadingBPT single(true, false);
 }
