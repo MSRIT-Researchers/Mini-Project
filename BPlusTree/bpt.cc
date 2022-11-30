@@ -810,7 +810,6 @@ off_t bplus_tree::search_leaf(off_t index, const key_t &key) const
                     internal_node_t child;
                     map(&child, node.children[i].child);
                     q.push({child,node.children[i].child}); // push the child node and its offset
-                    
                 }
             }
         }

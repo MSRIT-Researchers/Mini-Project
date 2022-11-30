@@ -102,8 +102,9 @@
 
         uint64_t startTime =timeSinceEpochMillisec();
         meta.thread_offsets[meta.number_of_threads] = 0;
-
-
+        
+        // omp_set_dynamic(0);     
+        // omp_set_num_threads( meta.number_of_threads); // set number of threads in "parallel" blocks
         // #pragma omp parallel
         // {
         //     // usleep(5000 * omp_get_thread_num()); // do this to avoid race condition while printing
@@ -112,15 +113,17 @@
         //     // std::cout << "Hello, World!" << std::endl;
         //     int i = omp_get_thread_num();
         //     std::cout << "Current thread number: " << omp_get_thread_num() << std::endl;
-        //     spawnThread(i, meta.thread_offsets[i], meta.thread_offsets[i+1]);   
+        //     multithread_aggregate(i, meta.thread_offsets[i], meta.thread_offsets[i+1]);   
         // }
 
-        // std::vector<std::thread> threads;
-        #pragma omp parallel
-        #pragma omp for
+        // // std::vector<std::thread> threads;
+        // #pragma omp parallel
+        #pragma omp parallel for
         for (size_t i = 0; i < meta.number_of_threads ; ++i){
             // threads.push_back(spawnThread(i, meta.thread_offsets[i], meta.thread_offsets[i+1]));
-            spawnThread(i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
+            std::cout<< omp_get_thread_num()<<std::endl;
+            multithread_aggregate(i, meta.thread_offsets[i], meta.thread_offsets[i+1]);
+            // multithread_aggregate(i,meta)
         }
 
         
@@ -181,7 +184,7 @@
             }
             if(c>=1000){
                 // std::this_thread::sleep_for(std::chrono::milliseconds(1));
-                sendDataToMessageQ(sum, c);
+                // sendDataToMessageQ(sum, c);
                 c=0;
                 sum=0;
             }
@@ -197,7 +200,7 @@
             }
 
         printf("Done Processing Thread: %d with count %lld\n", thread_number, count);
-        sendDataToMessageQ(sum, c);
+        // sendDataToMessageQ(sum, c);
     }
 
     void MultiThreadingBPT::multithread_aggregate_single(const int thread_number, off_t start_leaf_offset, off_t end_leaf_offset){
@@ -230,4 +233,13 @@
 
         printf("Done Processing Thread: %d with count %lld\n", thread_number, count);
         sendDataToMessageQ(sum, count);
+    }
+
+    int main(){
+        MultiThreadingBPT m(false);
+        // omp_set_num_threads(8);
+        // #pragma omp parallel 
+        // {
+        //     printf("Hello World\n");
+        // }
     }
